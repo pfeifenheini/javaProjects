@@ -3,6 +3,7 @@
 !*.java
 
 !*.txt
+!*.pdf
 
 !*.html
 !*.css
