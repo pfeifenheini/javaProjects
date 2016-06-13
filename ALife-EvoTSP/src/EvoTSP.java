@@ -41,7 +41,10 @@ public class EvoTSP {
 				}
 			}
 		} catch (IOException e) {
-			e.printStackTrace();
+			System.out.println(e.getMessage());
+			System.out.println("Program stoped");
+//			e.printStackTrace();
+			return null;
 		} finally {
 			try {
 				if(br != null) br.close();
@@ -61,84 +64,136 @@ public class EvoTSP {
 		System.out.println("help       - prints the list of commands");
 		System.out.println("status / s - gives an overview of the current simulation");
 		System.out.println("best       - gives the currently best strategy");
+		System.out.println("gnuplot    - creates for each thread a file with gnuplot commands");
+		System.out.println("             to plot the development of the population");
+		System.out.println("restart    - reinitializes the program");
 		System.out.println("stop       - stops the simulation");
 	}
 	
 	public static void main(String[] args) {
-		// **********
-		// USER INPUT
-		// **********
+		
+		String command = "";
 		Scanner user_input = new Scanner(System.in);
-		String error = "value not allowed!";
-		System.out.print("enter population size\nP = ");
-		int P = user_input.nextInt();
-		while(P < 0) {
-			System.out.print(error + "\nP = ");
-			P = user_input.nextInt();
-		}
-		System.out.print("enter number of parents\nmu = ");
-		int mu = user_input.nextInt();
-		while(mu < 0 || mu >P) {
-			System.out.print(error + "\nmu = ");
-			mu = user_input.nextInt();
-		}
-		System.out.print("enter offspring size (enter 0 for default P-mu)\nlambda = ");
-		int lambda = user_input.nextInt();
-		while(lambda < 0 || lambda > (P-mu)) {
-			System.out.print(error + "\nlambda = ");
-			lambda = user_input.nextInt();
-		}
-		if(lambda == 0) lambda = P-mu;
-		System.out.println("enter (relative) path to file containing cities:");
-		ArrayList<City> cities = readFile(user_input.next());
-		
-		// ****************
-		// START SIMULATION
-		// ****************
-		Population p = new Population(P,mu,lambda,cities);
-		Thread simulation = new Thread(p);
-		simulation.start();
-		System.out.println("Simulation started!");
-		try {
-			Thread.sleep(500);
-		} catch (InterruptedException e1) {
-			e1.printStackTrace();
-		}
-		printHelp();
-		
-		// ***********************
-		// INPUT DURING SIMULATION
-		// ***********************
-		String command = user_input.next();
 		while(!command.equals("stop")) {
-			if(command.equals("help")) {
+			// **********
+			// USER INPUT
+			// **********
+			String error = "value not allowed!";
+			System.out.print("enter population size\nP = ");
+			int P = user_input.nextInt();
+			while(P < 0) {
+				System.out.print(error + "\nP = ");
+				P = user_input.nextInt();
+			}
+			System.out.print("enter number of parents\nmu = ");
+			int mu = user_input.nextInt();
+			while(mu < 0 || mu >P) {
+				System.out.print(error + "\nmu = ");
+				mu = user_input.nextInt();
+			}
+			System.out.print("enter offspring size (enter 0 for default P-mu)\nlambda = ");
+			int lambda = user_input.nextInt();
+			while(lambda < 0 || lambda > (P-mu)) {
+				System.out.print(error + "\nlambda = ");
+				lambda = user_input.nextInt();
+			}
+			if(lambda == 0) {
+				lambda = P-mu;
+				System.out.println("lambda set to " + lambda);
+			}
+			System.out.println("enter (relative) path to file containing cities:");
+			ArrayList<City> cities = readFile(user_input.next());
+			System.out.print("Set number of threads to: ");
+			int threadsNumber = user_input.nextInt();
+			if(threadsNumber<=0) {
+				threadsNumber = 1;
+				System.out.println("Threads can not be 0. Set to 1 instead!");
+			}
+			
+			if(cities != null)
+			{
+				
+				// ****************
+				// START SIMULATION
+				// ****************
+				ArrayList<Population> populations = new ArrayList<Population>(threadsNumber);
+				ArrayList<Thread> threads = new ArrayList<Thread>(threadsNumber);
+				for(int i=0;i<threadsNumber;i++) {
+					Population p = new Population(P,mu,lambda,cities,i);
+					populations.add(p);
+					Thread t = new Thread(p);
+					threads.add(t);
+					t.setPriority(Thread.NORM_PRIORITY - 1);
+				}
+//				Population p = new Population(P,mu,lambda,cities);
+//				Thread simulation = new Thread(p);
 				printHelp();
+				System.out.println("Symulation starts in");
+				for(int i=0;i<3;i++) {
+					System.out.print((3-i));
+					for(int j=0;j<3;j++) {
+						System.out.print(".");
+						try {
+							Thread.sleep(500);
+						} catch (InterruptedException e1) {
+							e1.printStackTrace();
+						}
+					}
+					System.out.println("");
+				}
+				for(Thread t : threads) {
+					t.start();
+				}
+//				simulation.start();
+				
+				// ***********************
+				// INPUT DURING SIMULATION
+				// ***********************
+				command = user_input.next();
+				while(!command.equals("stop")) {
+					if(command.equals("help")) {
+						printHelp();
+					}
+					else if(command.equals("s") || command.equals("status")) {
+						System.out.println("--- STATUS ---");
+						for(Population p : populations)
+							p.printStatus();
+						System.out.println("--------------");
+					}
+					else if(command.equals("best")) {
+						System.out.println("--- BEST ---");
+						for(Population p : populations)
+							p.printBest();
+						System.out.println("------------");
+					}
+					else if(command.equals("restart")) {
+						break;
+					}
+					else if(command.equals("gnuplot")) {
+						for(Population p : populations)
+							p.createGnuplotFile();
+					}
+					else {
+						System.out.println("command unknown");
+						printHelp();
+					}
+					command = user_input.next();
+				}
+				
+				// ***************
+				// STOP SIMULATION
+				// ***************
+				for(Population p : populations)
+					p.kill();
+				try {
+					for(Thread t : threads)
+						t.join();
+					System.out.println("simulation stoped");
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
 			}
-			else if(command.equals("s") || command.equals("status")) {
-				p.printStatus();
-			}
-			else if(command.equals("best")) {
-				p.printBest();
-			}
-			else {
-				System.out.println("command unknown");
-				printHelp();
-			}
-			command = user_input.next();
-		}
-		
-		// ***************
-		// STOP SIMULATION
-		// ***************
-		p.kill();
-		try {
-			simulation.join();
-			System.out.println("simulation stoped");
-		} catch (InterruptedException e) {
-			e.printStackTrace();
 		}
 		user_input.close();
-
 	}
-
 }

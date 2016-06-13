@@ -18,7 +18,7 @@ mu        - number of parents
 lambda    - number of offspring, enter '0' to set to P-mu
 file path - path to the file containing the cities
             path can be relative to the source folder
-            format: one city per line '<id> <x-coordinate> <y-coordinate>'
+            format: one city per line '<int:id> <int:x-coordinate> <int:y-coordinate>'
 			ids need to go in order from 1 to <total number of cities>
 			lines starting with '#' are ignored
 
@@ -39,7 +39,7 @@ stop       - stops the simulation
 > 1000 generations in the following format:
 
 output.txt - one generation per line:
-             '<generation> <length of the best tour> <length of the worst tour> <mean length of all tours>'
+             '<int:generation> <double:length of the best tour> <double:length of the worst tour> <double:mean length of all tours>'
 			 separated by whitespace
 
 <<< Plotting data >>>

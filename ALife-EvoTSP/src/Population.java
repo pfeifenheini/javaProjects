@@ -26,7 +26,7 @@ public class Population implements Runnable {
 	/** simulation runs as long as this variable is true */
 	private volatile boolean isRunning = true;
 	/** best tour */
-	private volatile double best;
+	private volatile double best = 0;
 	/** worst tour */
 	private volatile double worst;
 	/** arithmetic mean of all tours */
@@ -35,6 +35,7 @@ public class Population implements Runnable {
 	private volatile int generation = 0;
 	/** contains the best of all tours */
 	private volatile Tour bestTour;
+	private int _threadID;
 	/** population size */
 	private int _P;
 	/** number of parents */
@@ -54,10 +55,11 @@ public class Population implements Runnable {
 	 * @param lambda number of offspring
 	 * @param cities list containing all cities
 	 */
-	Population(int P, int mu, int lambda, ArrayList<City> cities) {
+	Population(int P, int mu, int lambda, ArrayList<City> cities, int threadID) {
 		_P = P;
 		_mu = mu;
 		_lambda = lambda;
+		_threadID = threadID;
 		
 		// calculate distance matrix
 		_distanceMatrix = new double[cities.size()][cities.size()];
@@ -153,7 +155,7 @@ public class Population implements Runnable {
 	public void run() {
 		PrintWriter writer = null;
 		try {
-			writer = new PrintWriter("output.txt", "UTF-8");
+			writer = new PrintWriter("output" + _threadID + ".data", "UTF-8");
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		} catch (UnsupportedEncodingException e) {
@@ -162,15 +164,19 @@ public class Population implements Runnable {
 		
 		while(isRunning) {
 			externalSelection();
-			best = _pop.get(0).length();
-			worst =  _pop.get(_P-1).length();
-			calcMean();
-			if(generation < 20) { // the first 20 generations are printed to the standard output 
-				printStatus();
+			synchronized (this) {
+				worst =  _pop.get(_P-1).length();
+				calcMean();
+				if(_pop.get(0).length() > best) {
+					best = _pop.get(0).length();
+					writer.println(generation + " " + best + " " + worst + " " + mean);
+					writer.flush();
+					printStatus();
+				}
 			}
-			if(generation < 1000) { // the first 1000 generations are saved in a text file
-				writer.println(generation + " " + best + " " + worst + " " + mean);
-			}
+//			if(generation < 20) { // the first 20 generations are printed to the standard output 
+//				printStatus();
+//			}
 			inheritance();
 			mutation();
 			fitnessEvaluation();
@@ -196,24 +202,27 @@ public class Population implements Runnable {
 	 */
 	public void kill() {
 		isRunning = false;
-		System.out.println("stoping simulation");
+		System.out.println("stoping thread " + _threadID);
 	}
 	
 	/**
 	 * outputs the best tour to the standard output
 	 */
 	public void printBest() {
-		System.out.println(bestTour.toString());
+		System.out.println("Thread " + _threadID + ": " + bestTour.toString());
 	}
 	
 	/**
 	 * outputs some status information to the standard output
 	 */
 	public void printStatus() {
-		System.out.println("Best: " + (int)getBest()
-		+ ", Worst: " + (int)getWorst()
-		+ ", Mean: " + (int)getMean()
-		+ ", Generation: " + getGenerations());
+		synchronized (this) {
+			System.out.println("Thread " + _threadID
+			+ ": Best(" + (int)getBest() + ")"
+			+ ", Worst(" + (int)getWorst() + ")"
+			+ ", Mean(" + (int)getMean() + ")"
+			+ ", Generation: " + getGenerations());
+		}
 	}
 	
 	/**
@@ -227,5 +236,27 @@ public class Population implements Runnable {
 			output += counter++ + ":" + (int)t.length() + ", ";
 		}
 		return output;
+	}
+
+	public void createGnuplotFile() {
+		PrintWriter writer = null;
+		try {
+			writer = new PrintWriter("output" + _threadID + ".plot", "UTF-8");
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (UnsupportedEncodingException e) {
+			e.printStackTrace();
+		}
+		
+		writer.println("unset logscale");
+		writer.println("set xlabel \"eneration\"");
+		writer.println("set ylabel \"tour length\"");
+		writer.println("plot \"output" + _threadID + ".data\" using 1:2 title 'best' with steps, \\");
+		writer.println("\"output" + _threadID + ".data\" using 1:3 title 'worst' with steps, \\");
+		writer.println("\"output" + _threadID + ".data\" using 1:4 title 'mean' with steps");
+		writer.println("pause -1");
+		writer.close();
+		
+		System.out.println("Created file: Output" + _threadID + ".plot");
 	}
 }
