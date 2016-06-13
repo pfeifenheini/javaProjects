@@ -42,7 +42,6 @@ public class EvoTSP {
 			}
 		} catch (IOException e) {
 			System.out.println(e.getMessage());
-			System.out.println("Program stoped");
 //			e.printStackTrace();
 			return null;
 		} finally {
@@ -72,26 +71,29 @@ public class EvoTSP {
 	
 	public static void main(String[] args) {
 		
-		String command = "";
+		String command = "restart";
 		Scanner user_input = new Scanner(System.in);
 		while(!command.equals("stop")) {
 			// **********
 			// USER INPUT
 			// **********
 			String error = "value not allowed!";
-			System.out.print("enter population size\nP = ");
+			
+			System.out.print("> enter population size: P = ");
 			int P = user_input.nextInt();
 			while(P < 0) {
 				System.out.print(error + "\nP = ");
 				P = user_input.nextInt();
 			}
-			System.out.print("enter number of parents\nmu = ");
+			
+			System.out.print("> enter number of parents: mu = ");
 			int mu = user_input.nextInt();
 			while(mu < 0 || mu >P) {
 				System.out.print(error + "\nmu = ");
 				mu = user_input.nextInt();
 			}
-			System.out.print("enter offspring size (enter 0 for default P-mu)\nlambda = ");
+			
+			System.out.print("> enter offspring size (enter 0 for default P-mu): lambda = ");
 			int lambda = user_input.nextInt();
 			while(lambda < 0 || lambda > (P-mu)) {
 				System.out.print(error + "\nlambda = ");
@@ -99,16 +101,19 @@ public class EvoTSP {
 			}
 			if(lambda == 0) {
 				lambda = P-mu;
-				System.out.println("lambda set to " + lambda);
+				System.out.println("> lambda set to " + lambda);
 			}
-			System.out.println("enter (relative) path to file containing cities:");
-			ArrayList<City> cities = readFile(user_input.next());
-			System.out.print("Set number of threads to: ");
+			
+			System.out.print("> Set number of threads to: ");
 			int threadsNumber = user_input.nextInt();
 			if(threadsNumber<=0) {
 				threadsNumber = 1;
-				System.out.println("Threads can not be 0. Set to 1 instead!");
+				System.out.println("> Threads can not be 0. Set to 1 instead!");
 			}
+			
+			System.out.print("> enter (relative) path to file containing cities: ");
+			ArrayList<City> cities = readFile(user_input.next());
+
 			
 			if(cities != null)
 			{
@@ -155,16 +160,16 @@ public class EvoTSP {
 						printHelp();
 					}
 					else if(command.equals("s") || command.equals("status")) {
-						System.out.println("--- STATUS ---");
+						System.out.println("/--- STATUS ---\\");
 						for(Population p : populations)
 							p.printStatus();
-						System.out.println("--------------");
+						System.out.println("\\--------------/");
 					}
 					else if(command.equals("best")) {
-						System.out.println("--- BEST ---");
+						System.out.println("/--- BEST ---\\");
 						for(Population p : populations)
 							p.printBest();
-						System.out.println("------------");
+						System.out.println("\\------------/");
 					}
 					else if(command.equals("restart")) {
 						break;
