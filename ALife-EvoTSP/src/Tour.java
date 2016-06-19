@@ -1,3 +1,6 @@
+import java.io.FileNotFoundException;
+import java.io.PrintWriter;
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Collections;
 
@@ -8,8 +11,8 @@ import java.util.Collections;
  * the distances need to be provided in a 2-dimensional distance matrix
  * in which the entry (i,j) contains the distance between city i and city j. 
  * 
- * @author Martin
- *
+ * @author Martin Kretschmer
+ * @author Roland Meneghetti
  */
 public class Tour implements Comparable<Tour>{
 	
@@ -102,5 +105,26 @@ public class Tour implements Comparable<Tour>{
 		if(_length > t._length)
 			return -1;
 		return 0;
+	}
+	/**
+	 * first line is the length of the tour
+	 * after that one city per line in visited order
+	 */
+	public void save() {
+		PrintWriter writer = null;
+		try {
+			writer = new PrintWriter("bestTour.txt", "UTF-8");
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (UnsupportedEncodingException e) {
+			e.printStackTrace();
+		}
+		
+		writer.println(_length);
+		for(City c : _tour)
+			writer.println(c.id);
+		
+		writer.close();
+		
 	}
 }

@@ -18,7 +18,8 @@ import java.util.Collections;
  * Fitness Evaluation: Summation of the distances of consecutive cities in the tour
  * Termination:        By choice of the user. Type 'stop' in command line. 
  * 
- * @author Martin
+ * @author Martin Kretschmer
+ * @author Rolang Meneghetti
  *
  */
 public class Population implements Runnable {
@@ -174,9 +175,6 @@ public class Population implements Runnable {
 					printStatus();
 				}
 			}
-//			if(generation < 20) { // the first 20 generations are printed to the standard output 
-//				printStatus();
-//			}
 			inheritance();
 			mutation();
 			fitnessEvaluation();
@@ -213,6 +211,13 @@ public class Population implements Runnable {
 	}
 	
 	/**
+	 * creates a file containing the best tour
+	 */
+	public void saveBest() {
+		bestTour.save();
+	}
+	
+	/**
 	 * outputs some status information to the standard output
 	 */
 	public void printStatus() {
@@ -238,6 +243,11 @@ public class Population implements Runnable {
 		return output;
 	}
 
+	/**
+	 * creates a file that can be loaded in gnuplot with
+	 * the relevant commands to plot the data files containing
+	 * the development of the population
+	 */
 	public void createGnuplotFile() {
 		PrintWriter writer = null;
 		try {

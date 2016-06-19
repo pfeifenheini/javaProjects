@@ -7,7 +7,8 @@ import java.io.IOException;
 /**
  * Starts an evolutionary algorithm with parameters given by the user.
  * 
- * @author Martin
+ * @author Martin Kretschmer
+ * @author Rolang Meneghetti
  * @see Population
  *
  */
@@ -61,7 +62,7 @@ public class EvoTSP {
 	private static void printHelp() {
 		System.out.println("--- list of commands ---");
 		System.out.println("help       - prints the list of commands");
-		System.out.println("status / s - gives an overview of the current simulation");
+		System.out.println("status / s - gives an overview of the current simulations");
 		System.out.println("best       - gives the currently best strategy");
 		System.out.println("gnuplot    - creates for each thread a file with gnuplot commands");
 		System.out.println("             to plot the development of the population");
@@ -74,9 +75,9 @@ public class EvoTSP {
 		String command = "restart";
 		Scanner user_input = new Scanner(System.in);
 		while(!command.equals("stop")) {
-			// **********
-			// USER INPUT
-			// **********
+// **********
+// USER INPUT
+// **********
 			String error = "value not allowed!";
 			
 			System.out.print("> enter population size: P = ");
@@ -118,9 +119,9 @@ public class EvoTSP {
 			if(cities != null)
 			{
 				
-				// ****************
-				// START SIMULATION
-				// ****************
+// ****************
+// START SIMULATION
+// ****************
 				ArrayList<Population> populations = new ArrayList<Population>(threadsNumber);
 				ArrayList<Thread> threads = new ArrayList<Thread>(threadsNumber);
 				for(int i=0;i<threadsNumber;i++) {
@@ -130,8 +131,6 @@ public class EvoTSP {
 					threads.add(t);
 					t.setPriority(Thread.NORM_PRIORITY - 1);
 				}
-//				Population p = new Population(P,mu,lambda,cities);
-//				Thread simulation = new Thread(p);
 				printHelp();
 				System.out.println("Symulation starts in");
 				for(int i=0;i<3;i++) {
@@ -149,11 +148,10 @@ public class EvoTSP {
 				for(Thread t : threads) {
 					t.start();
 				}
-//				simulation.start();
 				
-				// ***********************
-				// INPUT DURING SIMULATION
-				// ***********************
+// ***********************
+// INPUT DURING SIMULATION
+// ***********************
 				command = user_input.next();
 				while(!command.equals("stop")) {
 					if(command.equals("help")) {
@@ -185,9 +183,9 @@ public class EvoTSP {
 					command = user_input.next();
 				}
 				
-				// ***************
-				// STOP SIMULATION
-				// ***************
+// ***************
+// STOP SIMULATION
+// ***************
 				for(Population p : populations)
 					p.kill();
 				try {
@@ -197,6 +195,18 @@ public class EvoTSP {
 				} catch (InterruptedException e) {
 					e.printStackTrace();
 				}
+				double bestOfAll = 0;
+				Population best = null;
+				for(Population p : populations) {
+					if(p.getBest() > bestOfAll) {
+						bestOfAll = p.getBest();
+						best = p;
+					}
+				}
+				System.out.println("Best tour found after " + best.getGenerations() + " generations:");
+				best.printBest();
+				best.saveBest();
+				System.out.println("Saved in 'bestTour.txt'");
 			}
 		}
 		user_input.close();
