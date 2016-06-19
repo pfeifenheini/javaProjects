@@ -22,6 +22,9 @@ public class EvoTSP {
 	 */
 	private static ArrayList<City> readFile(String filePath) {
 		
+		if(filePath.equals("default"))
+			filePath = "Positions_PA-E.txt";
+		
 		BufferedReader br = null;
 		String line;
 		ArrayList<City> cities = new ArrayList<City>();
@@ -204,9 +207,9 @@ public class EvoTSP {
 					}
 				}
 				System.out.println("Best tour found after " + best.getGenerations() + " generations:");
-				best.printBest();
+				System.out.println("Saved in 'bestTour.txt'\n");
 				best.saveBest();
-				System.out.println("Saved in 'bestTour.txt'");
+				
 			}
 		}
 		user_input.close();

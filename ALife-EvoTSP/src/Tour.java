@@ -121,10 +121,12 @@ public class Tour implements Comparable<Tour>{
 		}
 		
 		writer.println(_length);
-		for(City c : _tour)
-			writer.println(c.id);
+		System.out.println(_length);
+		for(City c : _tour) {
+			writer.println(c.id + " " + c.x + " " + c.y);
+			System.out.println(c.id + " " + c.x + " " + c.y);
+		}
 		
 		writer.close();
-		
 	}
 }
