@@ -1,20 +1,17 @@
 import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 import javax.swing.JButton;
-import javax.swing.JDialog;
 import javax.swing.JFrame;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JSplitPane;
 import javax.swing.border.EmptyBorder;
 
 public class ALifeRobot extends JFrame implements ActionListener {
-	
+
+	private static final long serialVersionUID = 1L;
+
 	private JPanel _contentPane;
 	
 	private JButton _back = 

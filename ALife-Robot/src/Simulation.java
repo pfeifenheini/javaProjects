@@ -6,13 +6,17 @@ import java.awt.event.ActionListener;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Scanner;
 
 import javax.swing.JPanel;
 
 public class Simulation extends JPanel implements ActionListener, Runnable {
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+	
 	public static final int res = 10;
 	public static final int gridSize = 50;
 	
@@ -24,7 +28,7 @@ public class Simulation extends JPanel implements ActionListener, Runnable {
 	
 	public Simulation() {
 		_grid = new int[gridSize][gridSize];
-		_robot = new Robot(_grid);
+		_robot = new Robot(_grid,gridSize);
 		readFile();
 		setPreferredSize(new Dimension(gridSize*res,gridSize*res));
 		setBackground(Color.white);
@@ -58,8 +62,6 @@ public class Simulation extends JPanel implements ActionListener, Runnable {
 		}
 	}
 	
-
-
 	@Override
 	public void run() {
 		while(isRunning) {
@@ -84,8 +86,14 @@ public class Simulation extends JPanel implements ActionListener, Runnable {
 					g.setColor(Color.black);
 					g.fillRect(x*res, (gridSize-y-1)*res, res, res);
 				}
-				else if(_grid[x][y] == 2) {
-					g.setColor(Color.blue);
+//				else if(_grid[x][y] == 2) {
+//					g.setColor(Color.blue);
+//					g.fillRect(x*res, (gridSize-y-1)*res, res, res);
+//				}
+				else if(_grid[x][y] > 1) {
+					float[] c = new float[3];
+					Color.RGBtoHSB(255-_grid[x][y], 255-_grid[x][y], 255, c);
+					g.setColor(Color.getHSBColor(c[0], c[1], c[2]));
 					g.fillRect(x*res, (gridSize-y-1)*res, res, res);
 				}
 			}
@@ -132,12 +140,12 @@ public class Simulation extends JPanel implements ActionListener, Runnable {
 			}
 			for(int x=0;x<gridSize;x++) {
 				for(int y=0;y<gridSize;y++) {
-					if(_grid[x][y] == 2) {
+					if(_grid[x][y] != 1) {
 						_grid[x][y] = 0;
 					}
 				}
 			}
-			_robot = new Robot(_grid);
+			_robot = new Robot(_grid,gridSize);
 			_animationSpeed = 400;
 			repaint();
 		}

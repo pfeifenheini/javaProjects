@@ -11,6 +11,7 @@ public class Robot {
 	public static final int W = 6;
 	public static final int NW = 7;
 	
+	private int _gridSize;
 	private int[][] _grid;
 	private Stack<State> _history;
 	
@@ -30,38 +31,81 @@ public class Robot {
 		}
 	}
 	
-	public Robot(int[][] grid) {
-		this(48,17,S,grid);
+	public Robot(int[][] grid, int gridSize) {
+		this(48,17,S,grid,gridSize);
 	}
 	
-	public Robot(int startX, int startY, int direction, int[][] grid) {
+	public Robot(int startX, int startY, int direction, int[][] grid, int gridSize) {
 		x = startX;
 		y = startY;
 		this.direction = direction;
+		_gridSize = gridSize;
 		_grid = grid;
 		_history = new Stack<State>();
-		_grid[x][y] = 2;
 	}
 	
 	public void step() {
-		for(int i=0;i<8;i++){
-			if(_grid[facingX()][facingY()] != 0)
-				direction = (direction+1)%8;
-		}
-		if(_grid[facingX()][facingY()] != 0) {
-			backtrack();
-		}
-		else {
+		State s = null;
+		if(!_history.isEmpty())
+			s = _history.lastElement();
+		if(s == null || !(s.x == x && s.y == y && s.direction == direction))
 			_history.push(new State(x,y,direction));
+		
+		_grid[x][y] = 255;
+		
+		if(leftCells() > rightCells()) {
+			direction = turn(1);
+		}
+		if(rightCells() > leftCells()) {
+			direction = turn(-1);
+		}
+		if(_grid[facingX()][facingY()] != 1) {
 			x = facingX();
 			y = facingY();
-			_grid[x][y] = 2;
 		}
+		else if(rightCells() == leftCells()) {
+			if(Math.random()<0.5)
+				direction = turn(-1);
+			else
+				direction = turn(1);
+		}
+		
+		for(int x=0;x<_gridSize;x++) {
+			for(int y=0;y<_gridSize;y++) {
+				if(_grid[x][y] > 20) {
+					_grid[x][y]--;
+				}
+			}
+		}
+		
+	}
+	
+	public int turn(int dir) {
+		if(dir>-8 && dir<8) {
+			return (direction+8+dir)%8;
+		}
+		return direction;
+	}
+	
+	public int leftCells() {
+		int sum = 0;
+		if(_grid[facingX(turn(-1))][facingY(turn(-1))] == 1) sum++;
+		if(_grid[facingX(turn(-2))][facingY(turn(-2))] == 1) sum++;
+//		if(_grid[facingX(turn(-3))][facingY(turn(-3))] == 1) sum++;
+		return sum;
+	}
+	
+	public int rightCells() {
+		int sum = 0;
+		if(_grid[facingX(turn(1))][facingY(turn(1))] == 1) sum++;
+		if(_grid[facingX(turn(2))][facingY(turn(2))] == 1) sum++;
+//		if(_grid[facingX(turn(3))][facingY(turn(3))] == 1) sum++;
+		return sum;
 	}
 	
 	public void backtrack() {
 		if(!_history.isEmpty()) {
-			State s = _history.lastElement();
+			State s = _history.peek();
 			x = s.x;
 			y = s.y;
 			direction = s.direction;
@@ -70,6 +114,14 @@ public class Robot {
 	}
 	
 	public int facingX() {
+		return facingX(direction);
+	}
+	
+	public int facingY() {
+		return facingY(direction);
+	}
+	
+	public int facingX(int direction) {
 		switch (direction) {
 		case NE:
 			return x+1;
@@ -88,7 +140,7 @@ public class Robot {
 		}
 	}
 	
-	public int facingY() {
+	public int facingY(int direction) {
 		switch (direction) {
 		case N:
 			return y+1;
