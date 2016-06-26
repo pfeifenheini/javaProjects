@@ -14,19 +14,28 @@ public class ALifeRobot extends JFrame implements ActionListener {
 
 	private JPanel _contentPane;
 	
+	/** Button to show previous step */
 	private JButton _back = 
 			new JButton("Back");
+	/** Button to perform a single step */
 	private JButton _step = 
 			new JButton("Step");
+	/** Button to slow down the animation speed */
 	private JButton _slower = 
 			new JButton("-");
+	/** Button to start the animation */
 	private JButton _run = 
 			new JButton("Run");
+	/** Button to increase the animation speed */
 	private JButton _faster = 
 			new JButton("+");
+	/** Button to reset the whole scene */
 	private JButton _reset = 
 			new JButton("Reset");
 	
+	/**
+	 * Create a new Frame and sets up the interface
+	 */
 	public ALifeRobot() {
 		this.setTitle("ALife Robot");
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -65,6 +74,11 @@ public class ALifeRobot extends JFrame implements ActionListener {
 		_slower.setEnabled(false);
 	}
 	
+	/**
+	 * Creates a new frame and makes it visible
+	 * 
+	 * @param args
+	 */
     public static void main(String[] args)
     {
 		EventQueue.invokeLater(new Runnable() {
@@ -79,6 +93,9 @@ public class ALifeRobot extends JFrame implements ActionListener {
 		});
     }
 
+    /**
+     * Overrides the actionPerformed method of the ActionListener Interface
+     */
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		if(e.getActionCommand().equals("Run")) {

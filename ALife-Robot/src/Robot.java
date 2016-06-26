@@ -11,14 +11,26 @@ public class Robot {
 	public static final int W = 6;
 	public static final int NW = 7;
 	
+	/** Side length of the grid containing this robot */
 	private int _gridSize;
+	/** Grid containing this robot */
 	private int[][] _grid;
+	/** Contains all former positions of the robot */
 	private Stack<State> _history;
 	
+	/** x-coordinate on the grid */
 	public int x;
+	/** y-coordinate on the grid */
 	public int y;
+	/** Current direction of the robot */
 	public int direction;
 	
+	/**
+	 * Defines the state of the robot.
+	 * 
+	 * @author Martin
+	 *
+	 */
 	private class State {
 		public int x;
 		public int y;
@@ -31,10 +43,26 @@ public class Robot {
 		}
 	}
 	
+	/**
+	 * Constructor. Sets the robot at the default position
+	 * (48,17) facing south.
+	 * 
+	 * @param grid The grid
+	 * @param gridSize Side length of the grid
+	 */
 	public Robot(int[][] grid, int gridSize) {
 		this(48,17,S,grid,gridSize);
 	}
 	
+	/**
+	 * Constructor. Initial position of the Robot can be defined.
+	 * 
+	 * @param startX Initial x-coodrdinate
+	 * @param startY Initial y-coodrdinate
+	 * @param direction Initial direction
+	 * @param grid The grid
+	 * @param gridSize Side length of the grid
+	 */
 	public Robot(int startX, int startY, int direction, int[][] grid, int gridSize) {
 		x = startX;
 		y = startY;
@@ -44,6 +72,21 @@ public class Robot {
 		_history = new Stack<State>();
 	}
 	
+	/**
+	 * Sets the position of the robot and resets the history.
+	 * 
+	 * @param x New x-coordinate
+	 * @param y New y-coordinate
+	 */
+	public void setPosition(int x, int y) {
+		this.x = x;
+		this.y = y;
+		_history = new Stack<State>();
+	}
+	
+	/**
+	 * Executes on step of the robot.
+	 */
 	public void step() {
 		State s = null;
 		if(!_history.isEmpty())
@@ -75,6 +118,14 @@ public class Robot {
 		}
 	}
 	
+	/**
+	 * Calculates the direction relative to the current direction.
+	 * A negative value is interpreted as a left turn, a positive
+	 * as a right turn.
+	 * 
+	 * @param dir Turning direction
+	 * @return New direction
+	 */
 	public int turn(int dir) {
 		if(dir>-8 && dir<8) {
 			return (direction+8+dir)%8;
@@ -82,22 +133,30 @@ public class Robot {
 		return direction;
 	}
 	
+	/**
+	 * Calculates how many walls are to the left
+	 * @return Number of Walls
+	 */
 	public int leftCells() {
 		int sum = 0;
 		if(_grid[facingX(turn(-1))][facingY(turn(-1))] == 1) sum++;
 		if(_grid[facingX(turn(-2))][facingY(turn(-2))] == 1) sum++;
-//		if(_grid[facingX(turn(-3))][facingY(turn(-3))] == 1) sum++;
 		return sum;
 	}
-	
+	 /**
+	  * Calculates how many walls are to the right
+	  * @return Number of Walls
+	  */
 	public int rightCells() {
 		int sum = 0;
 		if(_grid[facingX(turn(1))][facingY(turn(1))] == 1) sum++;
 		if(_grid[facingX(turn(2))][facingY(turn(2))] == 1) sum++;
-//		if(_grid[facingX(turn(3))][facingY(turn(3))] == 1) sum++;
 		return sum;
 	}
 	
+	/**
+	 * Executes a backtracking step
+	 */
 	public void backtrack() {
 		if(!_history.isEmpty()) {
 			State s = _history.peek();
@@ -108,14 +167,24 @@ public class Robot {
 		}
 	}
 	
+	/**
+	 * @return x-coordinate of the faced cell
+	 */
 	public int facingX() {
 		return facingX(direction);
 	}
 	
+	/**
+	 * @return y-coordinate of the faced cell
+	 */
 	public int facingY() {
 		return facingY(direction);
 	}
 	
+	/**
+	 * @param direction Direction
+	 * @return x-coodrinate of the cell in the given direction
+	 */
 	public int facingX(int direction) {
 		switch (direction) {
 		case NE:
@@ -135,6 +204,10 @@ public class Robot {
 		}
 	}
 	
+	/**
+	 * @param direction Direction
+	 * @return y-coodrinate of the cell in the given direction
+	 */
 	public int facingY(int direction) {
 		switch (direction) {
 		case N:
