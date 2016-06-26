@@ -53,12 +53,8 @@ public class Robot {
 		
 		_grid[x][y] = 255;
 		
-		if(leftCells() > rightCells()) {
-			direction = turn(1);
-		}
-		if(rightCells() > leftCells()) {
-			direction = turn(-1);
-		}
+		direction = turn(leftCells()-rightCells());
+
 		if(_grid[facingX()][facingY()] != 1) {
 			x = facingX();
 			y = facingY();
@@ -77,7 +73,6 @@ public class Robot {
 				}
 			}
 		}
-		
 	}
 	
 	public int turn(int dir) {

@@ -17,7 +17,7 @@ public class Simulation extends JPanel implements ActionListener, Runnable {
 	 */
 	private static final long serialVersionUID = 1L;
 	
-	public static final int res = 10;
+	public static int res = 13;
 	public static final int gridSize = 50;
 	
 	private int[][] _grid;
@@ -77,8 +77,8 @@ public class Simulation extends JPanel implements ActionListener, Runnable {
 	}
 	
 	@Override
-	public void paint(Graphics g) {
-		super.paint(g);
+	public void paintComponent(Graphics g) {
+		super.paintComponent(g);
 		
 		for(int x=0;x<gridSize;x++) {
 			for(int y=0;y<gridSize;y++) {
@@ -86,23 +86,30 @@ public class Simulation extends JPanel implements ActionListener, Runnable {
 					g.setColor(Color.black);
 					g.fillRect(x*res, (gridSize-y-1)*res, res, res);
 				}
-//				else if(_grid[x][y] == 2) {
-//					g.setColor(Color.blue);
-//					g.fillRect(x*res, (gridSize-y-1)*res, res, res);
-//				}
 				else if(_grid[x][y] > 1) {
 					float[] c = new float[3];
-					Color.RGBtoHSB(255-_grid[x][y], 255-_grid[x][y], 255, c);
+					Color.RGBtoHSB(255-_grid[x][y], 240, 240, c);
 					g.setColor(Color.getHSBColor(c[0], c[1], c[2]));
 					g.fillRect(x*res, (gridSize-y-1)*res, res, res);
 				}
 			}
 		}
 		
-		g.setColor(Color.red);
-		g.fillRect(_robot.x*res, (gridSize-_robot.y-1)*res, res, res);
+		g.setColor(Color.blue);
+		g.fillRect(_robot.x*res, (gridSize-_robot.y-1)*res, res, res);		
 		g.setColor(Color.green);
-		g.fillOval(_robot.facingX()*res, (gridSize-_robot.facingY()-1)*res, res, res);
+		g.fillOval(_robot.x*res+1, (gridSize-_robot.y-1)*res+1, res-2, res-2);
+		
+		g.setColor(Color.red);
+		for(int i=-2;i<3;i++)
+			drawSensoredCell(g, i);
+	}
+	
+	private void drawSensoredCell(Graphics g, int turning) {
+		if(_grid[_robot.facingX(_robot.turn(turning))][_robot.facingY(_robot.turn(turning))] == 1) {
+			g.fillRect(_robot.facingX(_robot.turn(turning))*res, (gridSize-_robot.facingY(_robot.turn(turning))-1)*res, res, res);
+		}
+		g.drawRect(_robot.facingX(_robot.turn(turning))*res, (gridSize-_robot.facingY(_robot.turn(turning))-1)*res, res, res);
 	}
 	
 	@Override
@@ -122,10 +129,10 @@ public class Simulation extends JPanel implements ActionListener, Runnable {
 			t.start();
 		}
 		if(e.getActionCommand().equals("+")) {
-			_animationSpeed = Math.max(10, (int)(_animationSpeed*0.8));
+			_animationSpeed = Math.max(5, (int)(_animationSpeed/1.3));
 		}
 		if(e.getActionCommand().equals("-")) {
-			_animationSpeed *= 1.2;
+			_animationSpeed = Math.min(2000, (int)(_animationSpeed*1.3));
 		}
 		if(e.getActionCommand().equals("Stop")) {
 			isRunning = false;
@@ -133,9 +140,8 @@ public class Simulation extends JPanel implements ActionListener, Runnable {
 		if(e.getActionCommand().equals("Reset")) {
 			isRunning = false;
 			try {
-				Thread.sleep(_animationSpeed*2);
+				Thread.sleep(_animationSpeed+100);
 			} catch (InterruptedException e1) {
-				// TODO Auto-generated catch block
 				e1.printStackTrace();
 			}
 			for(int x=0;x<gridSize;x++) {
