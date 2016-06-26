@@ -95,8 +95,11 @@ public class Robot {
 			_history.push(new State(x,y,direction));
 		
 		_grid[x][y] = 180;
-		
-		direction = turn(leftCells()-rightCells());
+		if(leftCells() > rightCells())
+			direction = turn(1);
+		else if(rightCells() > leftCells())
+			direction = turn(-1);
+//		direction = turn(leftCells()-rightCells());
 
 		if(_grid[facingX()][facingY()] != 1) {
 			x = facingX();

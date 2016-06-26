@@ -33,7 +33,6 @@ It will dage the difference of blocked left cells and blocked right cells to det
 If the difference is 0, the robot will just go one cell forward.
 If the difference is negative, more walls are on the right and the robot will first turn left and then go one cell forward.
 Analogously if the difference is positive.
-If the absolute value of the difference is 2, it will turn one position, if the difference is 1 it will turn 1 position.
 If the next cell is itself a wall, the robot will not move in the direction and just continue turning.
 
 With this behavior, the robot gets stuck very fast when the next cell is blocked and at the same time there is the same number of walls on the left and on the right side. So in this case, the robot will turn randomly right or left to escape this situation. One could interpret this behavior as sensor errors.
