@@ -88,7 +88,7 @@ public class Simulation extends JPanel implements ActionListener, Runnable {
 				}
 				else if(_grid[x][y] > 1) {
 					float[] c = new float[3];
-					Color.RGBtoHSB(255-_grid[x][y], 240, 240, c);
+					Color.RGBtoHSB(255-_grid[x][y], 255-_grid[x][y], 255, c);
 					g.setColor(Color.getHSBColor(c[0], c[1], c[2]));
 					g.fillRect(x*res, (gridSize-y-1)*res, res, res);
 				}

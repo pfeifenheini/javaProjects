@@ -30,7 +30,7 @@ public class ALifeRobot extends JFrame implements ActionListener {
 	public ALifeRobot() {
 		this.setTitle("ALife Robot");
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		setBounds(100, 100, Simulation.res*Simulation.gridSize+100, Simulation.res*Simulation.gridSize+100);
+		setBounds(100, 0, Simulation.res*Simulation.gridSize+100, Simulation.res*Simulation.gridSize+100);
 		_contentPane = new JPanel();
 		_contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 		_contentPane.setLayout(new BorderLayout(0, 0));

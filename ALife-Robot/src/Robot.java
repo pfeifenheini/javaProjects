@@ -51,7 +51,7 @@ public class Robot {
 		if(s == null || !(s.x == x && s.y == y && s.direction == direction))
 			_history.push(new State(x,y,direction));
 		
-		_grid[x][y] = 255;
+		_grid[x][y] = 180;
 		
 		direction = turn(leftCells()-rightCells());
 
@@ -68,8 +68,8 @@ public class Robot {
 		
 		for(int x=0;x<_gridSize;x++) {
 			for(int y=0;y<_gridSize;y++) {
-				if(_grid[x][y] > 20) {
-					_grid[x][y]--;
+				if(_grid[x][y] >= 5) {
+					_grid[x][y] -= 5;
 				}
 			}
 		}
