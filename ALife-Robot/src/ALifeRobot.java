@@ -4,6 +4,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
@@ -32,6 +33,12 @@ public class ALifeRobot extends JFrame implements ActionListener {
 	/** Button to reset the whole scene */
 	private JButton _reset = 
 			new JButton("Reset");
+	/** Strategy choice */
+	private JComboBox<String> _strategy =
+			new JComboBox<String>(Simulation.strategies);
+	
+	/** the simulation */
+	private Simulation sim;
 	
 	/**
 	 * Create a new Frame and sets up the interface
@@ -46,7 +53,7 @@ public class ALifeRobot extends JFrame implements ActionListener {
 		setContentPane(_contentPane);
 		
 		JPanel center = new JPanel();
-		Simulation sim = new Simulation();
+		sim = new Simulation();
 		center.add(sim);
 		_contentPane.add(center, BorderLayout.CENTER);
 		
@@ -57,6 +64,7 @@ public class ALifeRobot extends JFrame implements ActionListener {
 		buttons.add(_run);
 		buttons.add(_faster);
 		buttons.add(_reset);
+		buttons.add(_strategy);
 		_contentPane.add(buttons, BorderLayout.PAGE_END);
 		
 		_back.addActionListener(sim);
@@ -69,6 +77,7 @@ public class ALifeRobot extends JFrame implements ActionListener {
 		_slower.addActionListener(this);
 		_reset.addActionListener(sim);
 		_reset.addActionListener(this);
+		_strategy.addActionListener(sim);
 		
 		_faster.setEnabled(false);
 		_slower.setEnabled(false);
@@ -101,23 +110,21 @@ public class ALifeRobot extends JFrame implements ActionListener {
 		if(e.getActionCommand().equals("Run")) {
 			_back.setEnabled(false);
 			_step.setEnabled(false);
+			_strategy.setEnabled(false);
 			_faster.setEnabled(true);
 			_slower.setEnabled(true);
 			_run.setText("Stop");
 		}
-		if(e.getActionCommand().equals("Stop")) {
+		if(e.getActionCommand().equals("Stop") || e.getActionCommand().equals("Reset")) {
 			_back.setEnabled(true);
 			_step.setEnabled(true);
+			_strategy.setEnabled(true);
 			_faster.setEnabled(false);
 			_slower.setEnabled(false);
 			_run.setText("Run");
 		}
 		if(e.getActionCommand().equals("Reset")) {
-			_back.setEnabled(true);
-			_step.setEnabled(true);
-			_faster.setEnabled(false);
-			_slower.setEnabled(false);
-			_run.setText("Run");
+			_strategy.setSelectedIndex(sim.getStrategy());
 		}
 	}
 }

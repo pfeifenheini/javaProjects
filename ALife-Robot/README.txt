@@ -9,7 +9,7 @@ The file containing the grid information has to be in the same directory named '
 << Usage >>
 The buttons should be self explanatory. You can set and delete walls in the grid by left/right click. Also you can click and drag the robot to a new position. Clicking left/right on the robot will turn it. You can determine the current direction by the highlighted cells in front of the robot.
 
-<< Behavior >>
+<< Behavior Breitenberg 3b >>
 The robot can sense two cells to the left and two to the right of its current position, e.g.
 
 X - robot
@@ -36,3 +36,7 @@ Analogously if the difference is positive.
 If the next cell is itself a wall, the robot will not move in the direction and just continue turning.
 
 With this behavior, the robot gets stuck very fast when the next cell is blocked and at the same time there is the same number of walls on the left and on the right side. So in this case, the robot will turn randomly right or left to escape this situation. One could interpret this behavior as sensor errors.
+
+<< Behavior Wall Following >>
+
+It follows the wall with left hand rule.

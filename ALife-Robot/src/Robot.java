@@ -17,6 +17,8 @@ public class Robot {
 	private int[][] _grid;
 	/** Contains all former positions of the robot */
 	private Stack<State> _history;
+	/** chosen strategy */
+	public int strategy = 0;
 	
 	/** x-coordinate on the grid */
 	public int x;
@@ -94,14 +96,33 @@ public class Robot {
 		if(s == null || !(s.x == x && s.y == y && s.direction == direction))
 			_history.push(new State(x,y,direction));
 		
+		for(int x=0;x<_gridSize;x++) {
+			for(int y=0;y<_gridSize;y++) {
+				if(_grid[x][y] >= 5) {
+					_grid[x][y] -= 5;
+				}
+			}
+		}
 		_grid[x][y] = 180;
+		
+		if(strategy == 0)
+			breitenbergStep();
+		else
+			leftHandStep();
+	}
+	
+	/**
+	 * Breitenberg 3b behavior
+	 */
+	public void breitenbergStep() {
+		
 		if(leftCells() > rightCells())
 			direction = turn(1);
 		else if(rightCells() > leftCells())
 			direction = turn(-1);
-//		direction = turn(leftCells()-rightCells());
 
-		if(_grid[facingX()][facingY()] != 1) {
+//		if(_grid[facingX()][facingY()] != 1) {
+		if(!pathBlocked(0)) {
 			x = facingX();
 			y = facingY();
 		}
@@ -111,14 +132,64 @@ public class Robot {
 			else
 				direction = turn(1);
 		}
+	}
+	
+	/**
+	 * Wall following with left hand rule
+	 */
+	public void leftHandStep() {
+		if(noWallAround()) {
+			x = facingX();
+			y = facingY();
+			return;
+		}
 		
-		for(int x=0;x<_gridSize;x++) {
-			for(int y=0;y<_gridSize;y++) {
-				if(_grid[x][y] >= 5) {
-					_grid[x][y] -= 5;
-				}
+		if(pathBlocked(0)) {
+			if(!(pathBlocked(-1) && pathBlocked(-2) && pathBlocked(-3))) {
+				direction = turn(-1);
+			}
+			else {
+				direction = turn(1);
+			}
+			return;
+		}
+		
+		if(pathBlocked(-1)) {
+			x = facingX();
+			y = facingY();
+			return;
+		}
+		else {
+			direction = turn(-1);
+		}
+	}
+	
+	/**
+	 * 
+	 * @param offset Offset
+	 * @return true iff the direction is blocked
+	 */
+	public boolean pathBlocked(int offset) {
+		if(_grid[facingX(turn(offset))][facingY(turn(offset))] == 1) return true;
+		if(turn(offset)%2 == 1) {
+			if(_grid[facingX(turn(offset-1))][facingY(turn(offset-1))] == 1 &&
+					_grid[facingX(turn(offset+1))][facingY(turn(offset+1))] == 1) {
+				return true;
 			}
 		}
+		return false;
+	}
+	
+	/**
+	 * @return true iff all eight cells around the robot are free
+	 */
+	public boolean noWallAround() {
+		int count = 0;
+		for(int i=0;i<8;i++) {
+			if(_grid[facingX(turn(i))][facingY(turn(i))] == 1)
+				count++;
+		}
+		return count == 0;
 	}
 	
 	/**

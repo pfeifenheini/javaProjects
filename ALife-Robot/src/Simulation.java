@@ -12,6 +12,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.Scanner;
 
+import javax.swing.JComboBox;
 import javax.swing.JPanel;
 
 public class Simulation extends JPanel implements ActionListener, Runnable, MouseListener, MouseMotionListener {
@@ -27,6 +28,8 @@ public class Simulation extends JPanel implements ActionListener, Runnable, Mous
 	public static final int gridSize = 50;
 	/** default animation delay */
 	public static final int defaultAnimationDelay = 500;
+	/** list of possible strategies */
+	public static final String[] strategies = {"Breitenberg", "Wall Follow"};
 	
 	/** the grid */
 	private int[][] _grid;
@@ -108,7 +111,6 @@ public class Simulation extends JPanel implements ActionListener, Runnable, Mous
 			try {
 				Thread.sleep(_animationDelay);
 			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}
@@ -212,8 +214,16 @@ public class Simulation extends JPanel implements ActionListener, Runnable, Mous
 				}
 			}
 			readFile();
+			int currentStrategy = _robot.strategy;
 			_robot = new Robot(_grid,gridSize);
+			_robot.strategy = currentStrategy;
 			_animationDelay = defaultAnimationDelay;
+			repaint();
+		}
+		if(e.getActionCommand().equals("comboBoxChanged")) {
+			@SuppressWarnings("unchecked")
+			JComboBox<String> b = (JComboBox<String>) e.getSource();
+			_robot.strategy = b.getSelectedIndex();
 			repaint();
 		}
 	}
@@ -255,18 +265,15 @@ public class Simulation extends JPanel implements ActionListener, Runnable, Mous
 
 	@Override
 	public void mouseClicked(MouseEvent arg0) {
-		// TODO Auto-generated method stub
 	}
 
 	@Override
 	public void mouseEntered(MouseEvent arg0) {
-		// TODO Auto-generated method stub
 		
 	}
 
 	@Override
 	public void mouseExited(MouseEvent arg0) {
-		// TODO Auto-generated method stub
 		
 	}
 
@@ -340,7 +347,10 @@ public class Simulation extends JPanel implements ActionListener, Runnable, Mous
 
 	@Override
 	public void mouseMoved(MouseEvent arg0) {
-		// TODO Auto-generated method stub
 		
+	}
+
+	public int getStrategy() {
+		return _robot.strategy;
 	}
 }
