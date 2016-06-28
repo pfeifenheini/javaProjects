@@ -2,11 +2,11 @@ import java.awt.BorderLayout;
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
 
@@ -24,13 +24,13 @@ public class ALifeRobot extends JFrame implements ActionListener {
 			new JButton("Step");
 	/** Button to slow down the animation speed */
 	private JButton _slower = 
-			new JButton("-");
+			new JButton("<<");
 	/** Button to start the animation */
 	private JButton _run = 
 			new JButton("Run");
 	/** Button to increase the animation speed */
 	private JButton _faster = 
-			new JButton("+");
+			new JButton(">>");
 	/** Button to reset the whole scene */
 	private JButton _reset = 
 			new JButton("Reset");
@@ -40,6 +40,12 @@ public class ALifeRobot extends JFrame implements ActionListener {
 	/** Check box to toggle highlighted cells */
 	private JCheckBox _highlight =
 			new JCheckBox("Highlight Cells");
+	/** Zoom in Button */
+	private JButton _zoomIn =
+			new JButton("+");
+	/** Zoom out Button */
+	private JButton _zoomOut =
+			new JButton("-");
 	
 	/** the simulation */
 	private Simulation sim;
@@ -50,7 +56,7 @@ public class ALifeRobot extends JFrame implements ActionListener {
 	public ALifeRobot() {
 		this.setTitle("ALife Robot");
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		setBounds(100, 0, Simulation.PIXEL_SIZE*Simulation.GRID_SIZE+100, Simulation.PIXEL_SIZE*Simulation.GRID_SIZE+100);
+		setBounds(100, 0, Simulation.DEFAULT_PIXEL_SIZE*Simulation.GRID_SIZE+100, Simulation.DEFAULT_PIXEL_SIZE*Simulation.GRID_SIZE+140);
 		_contentPane = new JPanel();
 		_contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 		_contentPane.setLayout(new BorderLayout(0, 0));
@@ -60,6 +66,12 @@ public class ALifeRobot extends JFrame implements ActionListener {
 		sim = new Simulation();
 		center.add(sim);
 		_contentPane.add(center, BorderLayout.CENTER);
+		
+		JPanel zoom = new JPanel();
+		zoom.add(new JLabel("Zoom: "));
+		zoom.add(_zoomOut);
+		zoom.add(_zoomIn);
+		_contentPane.add(zoom,BorderLayout.PAGE_START);
 		
 		JPanel buttons = new JPanel();
 		buttons.add(_back);
@@ -84,6 +96,8 @@ public class ALifeRobot extends JFrame implements ActionListener {
 		_reset.addActionListener(this);
 		_strategy.addActionListener(sim);
 		_highlight.addActionListener(sim);
+		_zoomIn.addActionListener(this);
+		_zoomOut.addActionListener(this);
 		
 		_faster.setEnabled(false);
 		_slower.setEnabled(false);
@@ -130,6 +144,22 @@ public class ALifeRobot extends JFrame implements ActionListener {
 		}
 		if(e.getActionCommand().equals("Reset")) {
 			_strategy.setSelectedIndex(sim.getStrategy());
+		}
+		if(e.getSource() == _zoomIn) {
+			int current = sim.getPixelSize();
+			current++;
+			if(current <= 21) {
+				setSize(current*Simulation.GRID_SIZE+100, current*Simulation.GRID_SIZE+140);
+				sim.changePixelSize(current);
+			}
+		}
+		if(e.getSource() == _zoomOut) {
+			int current = sim.getPixelSize();
+			current--;
+			if(current >= 5) {
+				setSize(current*Simulation.GRID_SIZE+100, current*Simulation.GRID_SIZE+140);
+				sim.changePixelSize(current);
+			}
 		}
 	}
 }

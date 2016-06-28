@@ -22,8 +22,7 @@ public class Simulation extends JPanel implements ActionListener, Runnable, Mous
 	 */
 	private static final long serialVersionUID = 1L;
 	
-	/** pixel size of a cell */
-	public static int PIXEL_SIZE = 11;
+	public static int DEFAULT_PIXEL_SIZE = 11;
 	/** grid side length */
 	public static final int GRID_SIZE = 50;
 	/** default animation delay */
@@ -42,6 +41,8 @@ public class Simulation extends JPanel implements ActionListener, Runnable, Mous
 	private volatile boolean highlightCells = true;
 	/** delay between two animation steps */
 	private volatile int _animationDelay = DEFAULT_ANIMATION_DELAY;
+	/** pixel size of a cell */
+	private int _pixelSize = 11;
 	
 	/** current x-coordinate of the mouse */
 	private int mouseX = -1;
@@ -61,7 +62,7 @@ public class Simulation extends JPanel implements ActionListener, Runnable, Mous
 		_grid = new int[GRID_SIZE][GRID_SIZE];
 		_robot = new Robot(_grid,GRID_SIZE);
 		readFile();
-		setPreferredSize(new Dimension(GRID_SIZE*PIXEL_SIZE,GRID_SIZE*PIXEL_SIZE));
+		setPreferredSize(new Dimension(GRID_SIZE*_pixelSize,GRID_SIZE*_pixelSize));
 		setBackground(Color.white);
 		addMouseListener(this);
 		addMouseMotionListener(this);
@@ -135,13 +136,13 @@ public class Simulation extends JPanel implements ActionListener, Runnable, Mous
 			for(int y=0;y<GRID_SIZE;y++) {
 				if(_grid[x][y] == 1) {
 					g.setColor(Color.black);
-					g.fillRect(x*PIXEL_SIZE, (GRID_SIZE-y-1)*PIXEL_SIZE, PIXEL_SIZE, PIXEL_SIZE);
+					g.fillRect(x*_pixelSize, (GRID_SIZE-y-1)*_pixelSize, _pixelSize, _pixelSize);
 				}
 				else if(_grid[x][y] > 1) {
 					float[] c = new float[3];
 					Color.RGBtoHSB(255-_grid[x][y], 255-_grid[x][y], 255, c);
 					g.setColor(Color.getHSBColor(c[0], c[1], c[2]));
-					g.fillOval(x*PIXEL_SIZE+1, (GRID_SIZE-y-1)*PIXEL_SIZE+1, PIXEL_SIZE-2, PIXEL_SIZE-2);
+					g.fillOval(x*_pixelSize+1, (GRID_SIZE-y-1)*_pixelSize+1, _pixelSize-2, _pixelSize-2);
 				}
 			}
 		}
@@ -162,9 +163,9 @@ public class Simulation extends JPanel implements ActionListener, Runnable, Mous
 		// Draw Robot
 		paintDirection(g);
 		g.setColor(Color.blue);
-		g.fillOval(_robot.x*PIXEL_SIZE+1, (GRID_SIZE-_robot.y-1)*PIXEL_SIZE+1, PIXEL_SIZE-2, PIXEL_SIZE-2);
+		g.fillOval(_robot.x*_pixelSize+1, (GRID_SIZE-_robot.y-1)*_pixelSize+1, _pixelSize-2, _pixelSize-2);
 		g.setColor(Color.black);
-		g.drawOval(_robot.x*PIXEL_SIZE+1, (GRID_SIZE-_robot.y-1)*PIXEL_SIZE+1, PIXEL_SIZE-2, PIXEL_SIZE-2);
+		g.drawOval(_robot.x*_pixelSize+1, (GRID_SIZE-_robot.y-1)*_pixelSize+1, _pixelSize-2, _pixelSize-2);
 		
 
 		
@@ -181,11 +182,11 @@ public class Simulation extends JPanel implements ActionListener, Runnable, Mous
 		else
 			g.setColor(Color.green);
 		
-		int centerX = _robot.x*PIXEL_SIZE;
-		int centerY = (GRID_SIZE-_robot.y-1)*PIXEL_SIZE;
+		int centerX = _robot.x*_pixelSize;
+		int centerY = (GRID_SIZE-_robot.y-1)*_pixelSize;
 		int angle = _robot.direction*(-45)-245;
 		
-		g.fillArc(centerX-PIXEL_SIZE, centerY-PIXEL_SIZE, 3*PIXEL_SIZE, 3*PIXEL_SIZE, angle, -50);
+		g.fillArc(centerX-_pixelSize, centerY-_pixelSize, 3*_pixelSize, 3*_pixelSize, angle, -50);
 		g.setColor(Color.black);
 	}
 	
@@ -199,9 +200,9 @@ public class Simulation extends JPanel implements ActionListener, Runnable, Mous
 	private void highlightCell(Graphics g, int turning) {
 		g.setColor(Color.red);
 		if(_grid[_robot.facingX(_robot.turn(turning))][_robot.facingY(_robot.turn(turning))] == 1) {
-			g.fillRect(_robot.facingX(_robot.turn(turning))*PIXEL_SIZE, (GRID_SIZE-_robot.facingY(_robot.turn(turning))-1)*PIXEL_SIZE, PIXEL_SIZE, PIXEL_SIZE);
+			g.fillRect(_robot.facingX(_robot.turn(turning))*_pixelSize, (GRID_SIZE-_robot.facingY(_robot.turn(turning))-1)*_pixelSize, _pixelSize, _pixelSize);
 		}
-		g.drawRect(_robot.facingX(_robot.turn(turning))*PIXEL_SIZE, (GRID_SIZE-_robot.facingY(_robot.turn(turning))-1)*PIXEL_SIZE, PIXEL_SIZE, PIXEL_SIZE);
+		g.drawRect(_robot.facingX(_robot.turn(turning))*_pixelSize, (GRID_SIZE-_robot.facingY(_robot.turn(turning))-1)*_pixelSize, _pixelSize, _pixelSize);
 	}
 	
 	/**
@@ -226,10 +227,10 @@ public class Simulation extends JPanel implements ActionListener, Runnable, Mous
 			isRunning = true;
 			t.start();
 		}
-		if(e.getActionCommand().equals("+")) {
+		if(e.getActionCommand().equals(">>")) {
 			_animationDelay = Math.max(5, (int)(_animationDelay/1.5));
 		}
-		if(e.getActionCommand().equals("-")) {
+		if(e.getActionCommand().equals("<<")) {
 			_animationDelay = Math.min(2000, (int)(_animationDelay*1.5));
 		}
 		if(e.getActionCommand().equals("Stop")) {
@@ -275,8 +276,8 @@ public class Simulation extends JPanel implements ActionListener, Runnable, Mous
 	private boolean calcMousePos() {
 		Point p = getMousePosition();
 		if(p==null) return false;
-		int x = (int)(p.x/PIXEL_SIZE);
-		int y = (GRID_SIZE-(int)(p.y/PIXEL_SIZE)-1);
+		int x = (int)(p.x/_pixelSize);
+		int y = (GRID_SIZE-(int)(p.y/_pixelSize)-1);
 		if(mouseX == x && mouseY == y) return false;
 		mouseX = x;
 		mouseY = y;
@@ -391,5 +392,15 @@ public class Simulation extends JPanel implements ActionListener, Runnable, Mous
 
 	public int getStrategy() {
 		return _robot.strategy;
+	}
+
+	public int getPixelSize() {
+		return _pixelSize;
+	}
+	
+	public void changePixelSize(int value) {
+		_pixelSize = value;
+		setPreferredSize(new Dimension(GRID_SIZE*_pixelSize,GRID_SIZE*_pixelSize));
+		repaint();
 	}
 }
