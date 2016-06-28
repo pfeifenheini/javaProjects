@@ -23,13 +23,13 @@ public class Simulation extends JPanel implements ActionListener, Runnable, Mous
 	private static final long serialVersionUID = 1L;
 	
 	/** pixel size of a cell */
-	public static int res = 13;
+	public static int PIXEL_SIZE = 11;
 	/** grid side length */
-	public static final int gridSize = 50;
+	public static final int GRID_SIZE = 50;
 	/** default animation delay */
-	public static final int defaultAnimationDelay = 500;
+	public static final int DEFAULT_ANIMATION_DELAY = 500;
 	/** list of possible strategies */
-	public static final String[] strategies = {"Breitenberg", "Wall Follow"};
+	public static final String[] STRATEGIES = {"Breitenberg", "Wall Follow"};
 	
 	/** the grid */
 	private int[][] _grid;
@@ -38,8 +38,10 @@ public class Simulation extends JPanel implements ActionListener, Runnable, Mous
 	
 	/** indicates that the animation is running */
 	private volatile boolean isRunning = false;
+	/** */
+	private volatile boolean highlightCells = true;
 	/** delay between two animation steps */
-	private volatile int _animationDelay = defaultAnimationDelay;
+	private volatile int _animationDelay = DEFAULT_ANIMATION_DELAY;
 	
 	/** current x-coordinate of the mouse */
 	private int mouseX = -1;
@@ -56,10 +58,10 @@ public class Simulation extends JPanel implements ActionListener, Runnable, Mous
 	 * constructor
 	 */
 	public Simulation() {
-		_grid = new int[gridSize][gridSize];
-		_robot = new Robot(_grid,gridSize);
+		_grid = new int[GRID_SIZE][GRID_SIZE];
+		_robot = new Robot(_grid,GRID_SIZE);
 		readFile();
-		setPreferredSize(new Dimension(gridSize*res,gridSize*res));
+		setPreferredSize(new Dimension(GRID_SIZE*PIXEL_SIZE,GRID_SIZE*PIXEL_SIZE));
 		setBackground(Color.white);
 		addMouseListener(this);
 		addMouseMotionListener(this);
@@ -129,31 +131,62 @@ public class Simulation extends JPanel implements ActionListener, Runnable, Mous
 		super.paintComponent(g);
 		
 		// Draw Grid
-		for(int x=0;x<gridSize;x++) {
-			for(int y=0;y<gridSize;y++) {
+		for(int x=0;x<GRID_SIZE;x++) {
+			for(int y=0;y<GRID_SIZE;y++) {
 				if(_grid[x][y] == 1) {
 					g.setColor(Color.black);
-					g.fillRect(x*res, (gridSize-y-1)*res, res, res);
+					g.fillRect(x*PIXEL_SIZE, (GRID_SIZE-y-1)*PIXEL_SIZE, PIXEL_SIZE, PIXEL_SIZE);
 				}
 				else if(_grid[x][y] > 1) {
 					float[] c = new float[3];
 					Color.RGBtoHSB(255-_grid[x][y], 255-_grid[x][y], 255, c);
 					g.setColor(Color.getHSBColor(c[0], c[1], c[2]));
-					g.fillRect(x*res, (gridSize-y-1)*res, res, res);
+					g.fillOval(x*PIXEL_SIZE+1, (GRID_SIZE-y-1)*PIXEL_SIZE+1, PIXEL_SIZE-2, PIXEL_SIZE-2);
 				}
 			}
 		}
 		
-		// Draw Robot
-		g.setColor(Color.blue);
-		g.fillRect(_robot.x*res, (gridSize-_robot.y-1)*res, res, res);		
-		g.setColor(Color.green);
-		g.fillOval(_robot.x*res+1, (gridSize-_robot.y-1)*res+1, res-2, res-2);
-		
 		// Highlight observed cells
-		g.setColor(Color.red);
-		for(int i=-2;i<3;i++)
-			drawObservedCell(g, i);
+		if(highlightCells) {
+			if(_robot.strategy == 0) {
+				for(int i=-2;i<3;i++)
+					if(i != 0)
+						highlightCell(g, i);
+			}
+			else {
+				for(int i=1;i<8;i++)
+					highlightCell(g, i);
+			}
+		}
+		
+		// Draw Robot
+		paintDirection(g);
+		g.setColor(Color.blue);
+		g.fillOval(_robot.x*PIXEL_SIZE+1, (GRID_SIZE-_robot.y-1)*PIXEL_SIZE+1, PIXEL_SIZE-2, PIXEL_SIZE-2);
+		g.setColor(Color.black);
+		g.drawOval(_robot.x*PIXEL_SIZE+1, (GRID_SIZE-_robot.y-1)*PIXEL_SIZE+1, PIXEL_SIZE-2, PIXEL_SIZE-2);
+		
+
+		
+		
+	}
+	
+	/**
+	 * Draws the direction of the robot.
+	 * @param g Graphics
+	 */
+	private void paintDirection(Graphics g) {
+		if(_robot.pathBlocked(0))
+			g.setColor(Color.red);
+		else
+			g.setColor(Color.green);
+		
+		int centerX = _robot.x*PIXEL_SIZE;
+		int centerY = (GRID_SIZE-_robot.y-1)*PIXEL_SIZE;
+		int angle = _robot.direction*(-45)-245;
+		
+		g.fillArc(centerX-PIXEL_SIZE, centerY-PIXEL_SIZE, 3*PIXEL_SIZE, 3*PIXEL_SIZE, angle, -50);
+		g.setColor(Color.black);
 	}
 	
 	/**
@@ -163,11 +196,12 @@ public class Simulation extends JPanel implements ActionListener, Runnable, Mous
 	 * @param g Graphics
 	 * @param turning direction relative to current direction of the robot
 	 */
-	private void drawObservedCell(Graphics g, int turning) {
+	private void highlightCell(Graphics g, int turning) {
+		g.setColor(Color.red);
 		if(_grid[_robot.facingX(_robot.turn(turning))][_robot.facingY(_robot.turn(turning))] == 1) {
-			g.fillRect(_robot.facingX(_robot.turn(turning))*res, (gridSize-_robot.facingY(_robot.turn(turning))-1)*res, res, res);
+			g.fillRect(_robot.facingX(_robot.turn(turning))*PIXEL_SIZE, (GRID_SIZE-_robot.facingY(_robot.turn(turning))-1)*PIXEL_SIZE, PIXEL_SIZE, PIXEL_SIZE);
 		}
-		g.drawRect(_robot.facingX(_robot.turn(turning))*res, (gridSize-_robot.facingY(_robot.turn(turning))-1)*res, res, res);
+		g.drawRect(_robot.facingX(_robot.turn(turning))*PIXEL_SIZE, (GRID_SIZE-_robot.facingY(_robot.turn(turning))-1)*PIXEL_SIZE, PIXEL_SIZE, PIXEL_SIZE);
 	}
 	
 	/**
@@ -208,22 +242,27 @@ public class Simulation extends JPanel implements ActionListener, Runnable, Mous
 			} catch (InterruptedException e1) {
 				e1.printStackTrace();
 			}
-			for(int x=0;x<gridSize;x++) {
-				for(int y=0;y<gridSize;y++) {
+			for(int x=0;x<GRID_SIZE;x++) {
+				for(int y=0;y<GRID_SIZE;y++) {
 						_grid[x][y] = 0;
 				}
 			}
 			readFile();
 			int currentStrategy = _robot.strategy;
-			_robot = new Robot(_grid,gridSize);
+			_robot = new Robot(_grid,GRID_SIZE);
 			_robot.strategy = currentStrategy;
-			_animationDelay = defaultAnimationDelay;
+			_animationDelay = DEFAULT_ANIMATION_DELAY;
 			repaint();
 		}
 		if(e.getActionCommand().equals("comboBoxChanged")) {
 			@SuppressWarnings("unchecked")
 			JComboBox<String> b = (JComboBox<String>) e.getSource();
 			_robot.strategy = b.getSelectedIndex();
+			repaint();
+		}
+		if(e.getActionCommand().equals("Highlight Cells")) {
+			if(highlightCells) highlightCells = false;
+			else highlightCells = true;
 			repaint();
 		}
 	}
@@ -236,8 +275,8 @@ public class Simulation extends JPanel implements ActionListener, Runnable, Mous
 	private boolean calcMousePos() {
 		Point p = getMousePosition();
 		if(p==null) return false;
-		int x = (int)(p.x/res);
-		int y = (gridSize-(int)(p.y/res)-1);
+		int x = (int)(p.x/PIXEL_SIZE);
+		int y = (GRID_SIZE-(int)(p.y/PIXEL_SIZE)-1);
 		if(mouseX == x && mouseY == y) return false;
 		mouseX = x;
 		mouseY = y;
@@ -251,7 +290,7 @@ public class Simulation extends JPanel implements ActionListener, Runnable, Mous
 	 */
 	private void toggleCell() {
 		if(!robotDragged) {
-			if(mouseX<=0 || mouseX>=gridSize-1 || mouseY<=0 || mouseY>=gridSize-1) return;
+			if(mouseX<=0 || mouseX>=GRID_SIZE-1 || mouseY<=0 || mouseY>=GRID_SIZE-1) return;
 			
 			if(leftClick) {
 				_grid[mouseX][mouseY] = 1;

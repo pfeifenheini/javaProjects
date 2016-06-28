@@ -4,6 +4,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
@@ -35,7 +36,10 @@ public class ALifeRobot extends JFrame implements ActionListener {
 			new JButton("Reset");
 	/** Strategy choice */
 	private JComboBox<String> _strategy =
-			new JComboBox<String>(Simulation.strategies);
+			new JComboBox<String>(Simulation.STRATEGIES);
+	/** Check box to toggle highlighted cells */
+	private JCheckBox _highlight =
+			new JCheckBox("Highlight Cells");
 	
 	/** the simulation */
 	private Simulation sim;
@@ -46,7 +50,7 @@ public class ALifeRobot extends JFrame implements ActionListener {
 	public ALifeRobot() {
 		this.setTitle("ALife Robot");
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		setBounds(100, 0, Simulation.res*Simulation.gridSize+100, Simulation.res*Simulation.gridSize+100);
+		setBounds(100, 0, Simulation.PIXEL_SIZE*Simulation.GRID_SIZE+100, Simulation.PIXEL_SIZE*Simulation.GRID_SIZE+100);
 		_contentPane = new JPanel();
 		_contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 		_contentPane.setLayout(new BorderLayout(0, 0));
@@ -65,6 +69,7 @@ public class ALifeRobot extends JFrame implements ActionListener {
 		buttons.add(_faster);
 		buttons.add(_reset);
 		buttons.add(_strategy);
+		buttons.add(_highlight);
 		_contentPane.add(buttons, BorderLayout.PAGE_END);
 		
 		_back.addActionListener(sim);
@@ -78,9 +83,11 @@ public class ALifeRobot extends JFrame implements ActionListener {
 		_reset.addActionListener(sim);
 		_reset.addActionListener(this);
 		_strategy.addActionListener(sim);
+		_highlight.addActionListener(sim);
 		
 		_faster.setEnabled(false);
 		_slower.setEnabled(false);
+		_highlight.setSelected(true);
 	}
 	
 	/**
@@ -110,7 +117,6 @@ public class ALifeRobot extends JFrame implements ActionListener {
 		if(e.getActionCommand().equals("Run")) {
 			_back.setEnabled(false);
 			_step.setEnabled(false);
-			_strategy.setEnabled(false);
 			_faster.setEnabled(true);
 			_slower.setEnabled(true);
 			_run.setText("Stop");
@@ -118,7 +124,6 @@ public class ALifeRobot extends JFrame implements ActionListener {
 		if(e.getActionCommand().equals("Stop") || e.getActionCommand().equals("Reset")) {
 			_back.setEnabled(true);
 			_step.setEnabled(true);
-			_strategy.setEnabled(true);
 			_faster.setEnabled(false);
 			_slower.setEnabled(false);
 			_run.setText("Run");

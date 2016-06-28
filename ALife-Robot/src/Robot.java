@@ -18,7 +18,7 @@ public class Robot {
 	/** Contains all former positions of the robot */
 	private Stack<State> _history;
 	/** chosen strategy */
-	public int strategy = 0;
+	public volatile int strategy = 0;
 	
 	/** x-coordinate on the grid */
 	public int x;
@@ -103,7 +103,7 @@ public class Robot {
 				}
 			}
 		}
-		_grid[x][y] = 180;
+		_grid[x][y] = 250;
 		
 		if(strategy == 0)
 			breitenbergStep();
