@@ -40,6 +40,9 @@ public class ALifeRobot extends JFrame implements ActionListener {
 	/** Check box to toggle highlighted cells */
 	private JCheckBox _highlight =
 			new JCheckBox("Highlight Cells");
+	/** Raster check box */
+	private JCheckBox _raster =
+			new JCheckBox("Raster");
 	/** Zoom in Button */
 	private JButton _zoomIn =
 			new JButton("+");
@@ -71,6 +74,7 @@ public class ALifeRobot extends JFrame implements ActionListener {
 		zoom.add(new JLabel("Zoom: "));
 		zoom.add(_zoomOut);
 		zoom.add(_zoomIn);
+		zoom.add(_raster);
 		_contentPane.add(zoom,BorderLayout.PAGE_START);
 		
 		JPanel buttons = new JPanel();
@@ -98,10 +102,12 @@ public class ALifeRobot extends JFrame implements ActionListener {
 		_highlight.addActionListener(sim);
 		_zoomIn.addActionListener(this);
 		_zoomOut.addActionListener(this);
+		_raster.addActionListener(sim);
 		
 		_faster.setEnabled(false);
 		_slower.setEnabled(false);
 		_highlight.setSelected(true);
+		_raster.setSelected(true);
 	}
 	
 	/**

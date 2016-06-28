@@ -39,6 +39,8 @@ public class Simulation extends JPanel implements ActionListener, Runnable, Mous
 	private volatile boolean isRunning = false;
 	/** */
 	private volatile boolean highlightCells = true;
+	/** */
+	private volatile boolean showRaster = true;
 	/** delay between two animation steps */
 	private volatile int _animationDelay = DEFAULT_ANIMATION_DELAY;
 	/** pixel size of a cell */
@@ -138,11 +140,18 @@ public class Simulation extends JPanel implements ActionListener, Runnable, Mous
 					g.setColor(Color.black);
 					g.fillRect(x*_pixelSize, (GRID_SIZE-y-1)*_pixelSize, _pixelSize, _pixelSize);
 				}
-				else if(_grid[x][y] > 1) {
-					float[] c = new float[3];
-					Color.RGBtoHSB(255-_grid[x][y], 255-_grid[x][y], 255, c);
-					g.setColor(Color.getHSBColor(c[0], c[1], c[2]));
-					g.fillOval(x*_pixelSize+1, (GRID_SIZE-y-1)*_pixelSize+1, _pixelSize-2, _pixelSize-2);
+				else {
+					if(showRaster) {
+						g.setColor(Color.lightGray);
+						g.drawRect(x*_pixelSize, (GRID_SIZE-y-1)*_pixelSize, _pixelSize, _pixelSize);
+					}
+					
+					if(_grid[x][y] > 1) {
+						float[] c = new float[3];
+						Color.RGBtoHSB(255-_grid[x][y], 255-_grid[x][y], 255, c);
+						g.setColor(Color.getHSBColor(c[0], c[1], c[2]));
+						g.fillOval(x*_pixelSize+1, (GRID_SIZE-y-1)*_pixelSize+1, _pixelSize-2, _pixelSize-2);
+					}
 				}
 			}
 		}
@@ -203,6 +212,8 @@ public class Simulation extends JPanel implements ActionListener, Runnable, Mous
 			g.fillRect(_robot.facingX(_robot.turn(turning))*_pixelSize, (GRID_SIZE-_robot.facingY(_robot.turn(turning))-1)*_pixelSize, _pixelSize, _pixelSize);
 		}
 		g.drawRect(_robot.facingX(_robot.turn(turning))*_pixelSize, (GRID_SIZE-_robot.facingY(_robot.turn(turning))-1)*_pixelSize, _pixelSize, _pixelSize);
+		if(showRaster)
+			g.drawRect(_robot.facingX(_robot.turn(turning))*_pixelSize+1, (GRID_SIZE-_robot.facingY(_robot.turn(turning))-1)*_pixelSize+1, _pixelSize-2, _pixelSize-2);
 	}
 	
 	/**
@@ -264,6 +275,11 @@ public class Simulation extends JPanel implements ActionListener, Runnable, Mous
 		if(e.getActionCommand().equals("Highlight Cells")) {
 			if(highlightCells) highlightCells = false;
 			else highlightCells = true;
+			repaint();
+		}
+		if(e.getActionCommand().equals("Raster")) {
+			if(showRaster) showRaster = false;
+			else showRaster = true;
 			repaint();
 		}
 	}
