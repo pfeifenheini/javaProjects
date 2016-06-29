@@ -171,14 +171,10 @@ public class Simulation extends JPanel implements ActionListener, Runnable, Mous
 		
 		// Draw Robot
 		paintDirection(g);
-		g.setColor(Color.blue);
+		g.setColor(Color.gray);
 		g.fillOval(_robot.x*_pixelSize+1, (GRID_SIZE-_robot.y-1)*_pixelSize+1, _pixelSize-2, _pixelSize-2);
 		g.setColor(Color.black);
 		g.drawOval(_robot.x*_pixelSize+1, (GRID_SIZE-_robot.y-1)*_pixelSize+1, _pixelSize-2, _pixelSize-2);
-		
-
-		
-		
 	}
 	
 	/**
