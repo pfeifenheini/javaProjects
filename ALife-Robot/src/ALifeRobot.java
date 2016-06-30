@@ -59,7 +59,6 @@ public class ALifeRobot extends JFrame implements ActionListener {
 	public ALifeRobot() {
 		this.setTitle("ALife Robot");
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		setBounds(100, 0, Simulation.DEFAULT_PIXEL_SIZE*Simulation.GRID_SIZE+100, Simulation.DEFAULT_PIXEL_SIZE*Simulation.GRID_SIZE+140);
 		_contentPane = new JPanel();
 		_contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 		_contentPane.setLayout(new BorderLayout(0, 0));
@@ -108,6 +107,8 @@ public class ALifeRobot extends JFrame implements ActionListener {
 		_slower.setEnabled(false);
 		_highlight.setSelected(true);
 		_raster.setSelected(true);
+		
+		this.pack();
 	}
 	
 	/**
@@ -155,16 +156,16 @@ public class ALifeRobot extends JFrame implements ActionListener {
 			int current = sim.getPixelSize();
 			current++;
 			if(current <= 21) {
-				setSize(current*Simulation.GRID_SIZE+100, current*Simulation.GRID_SIZE+140);
-				sim.changePixelSize(current);
+				sim.setPixelSize(current);
+				pack();
 			}
 		}
 		if(e.getSource() == _zoomOut) {
 			int current = sim.getPixelSize();
 			current--;
 			if(current >= 5) {
-				setSize(current*Simulation.GRID_SIZE+100, current*Simulation.GRID_SIZE+140);
-				sim.changePixelSize(current);
+				sim.setPixelSize(current);
+				pack();
 			}
 		}
 	}

@@ -22,7 +22,7 @@ public class Simulation extends JPanel implements ActionListener, Runnable, Mous
 	 */
 	private static final long serialVersionUID = 1L;
 	
-	public static int DEFAULT_PIXEL_SIZE = 11;
+	public static int DEFAULT_PIXEL_SIZE = 13;
 	/** grid side length */
 	public static final int GRID_SIZE = 50;
 	/** default animation delay */
@@ -410,7 +410,7 @@ public class Simulation extends JPanel implements ActionListener, Runnable, Mous
 		return _pixelSize;
 	}
 	
-	public void changePixelSize(int value) {
+	public void setPixelSize(int value) {
 		_pixelSize = value;
 		setPreferredSize(new Dimension(GRID_SIZE*_pixelSize,GRID_SIZE*_pixelSize));
 		repaint();
