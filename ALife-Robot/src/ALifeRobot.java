@@ -16,6 +16,13 @@ public class ALifeRobot extends JFrame implements ActionListener {
 
 	private JPanel _contentPane;
 	
+	private JPanel _centerPane;
+	private JPanel _topPane;
+	private JPanel _bottomPane;
+	
+	/** The Grid */
+	private RobotGrid sim;
+	
 	/** Button to show previous step */
 	private JButton _back = 
 			new JButton("Back");
@@ -36,7 +43,7 @@ public class ALifeRobot extends JFrame implements ActionListener {
 			new JButton("Reset");
 	/** Strategy choice */
 	private JComboBox<String> _strategy =
-			new JComboBox<String>(Simulation.STRATEGIES);
+			new JComboBox<String>(RobotGrid.STRATEGIES);
 	/** Check box to toggle highlighted cells */
 	private JCheckBox _highlight =
 			new JCheckBox("Highlight Cells");
@@ -50,8 +57,7 @@ public class ALifeRobot extends JFrame implements ActionListener {
 	private JButton _zoomOut =
 			new JButton("-");
 	
-	/** the simulation */
-	private Simulation sim;
+	
 	
 	/**
 	 * Create a new Frame and sets up the interface
@@ -64,51 +70,47 @@ public class ALifeRobot extends JFrame implements ActionListener {
 		_contentPane.setLayout(new BorderLayout(0, 0));
 		setContentPane(_contentPane);
 		
-		JPanel center = new JPanel();
-		sim = new Simulation();
-		center.add(sim);
-		_contentPane.add(center, BorderLayout.CENTER);
+		_centerPane = new JPanel();
+		sim = new RobotGrid();
+		_centerPane.add(sim);
+		_contentPane.add(_centerPane, BorderLayout.CENTER);
 		
-		JPanel zoom = new JPanel();
-		zoom.add(new JLabel("Zoom: "));
-		zoom.add(_zoomOut);
-		zoom.add(_zoomIn);
-		zoom.add(_raster);
-		_contentPane.add(zoom,BorderLayout.PAGE_START);
+		_topPane = new JPanel();
+		_topPane.add(new JLabel("Zoom: "));
+		_topPane.add(_zoomOut);
+		_topPane.add(_zoomIn);
+		_topPane.add(_raster);
+		_contentPane.add(_topPane,BorderLayout.PAGE_START);
 		
-		JPanel buttons = new JPanel();
-		buttons.add(_back);
-		buttons.add(_step);
-		buttons.add(_slower);
-		buttons.add(_run);
-		buttons.add(_faster);
-		buttons.add(_reset);
-		buttons.add(_strategy);
-		buttons.add(_highlight);
-		_contentPane.add(buttons, BorderLayout.PAGE_END);
+		_bottomPane = new JPanel();
+		_bottomPane.add(_back);
+		_bottomPane.add(_step);
+		_bottomPane.add(_slower);
+		_bottomPane.add(_run);
+		_bottomPane.add(_faster);
+		_bottomPane.add(_reset);
+		_bottomPane.add(_strategy);
+		_bottomPane.add(_highlight);
+		_contentPane.add(_bottomPane, BorderLayout.PAGE_END);
 		
-		_back.addActionListener(sim);
-		_step.addActionListener(sim);
-		_faster.addActionListener(sim);
+		_back.addActionListener(this);
+		_step.addActionListener(this);
 		_faster.addActionListener(this);
-		_run.addActionListener(sim);
 		_run.addActionListener(this);
-		_slower.addActionListener(sim);
 		_slower.addActionListener(this);
-		_reset.addActionListener(sim);
 		_reset.addActionListener(this);
-		_strategy.addActionListener(sim);
-		_highlight.addActionListener(sim);
+		_strategy.addActionListener(this);
+		_highlight.addActionListener(this);
 		_zoomIn.addActionListener(this);
 		_zoomOut.addActionListener(this);
-		_raster.addActionListener(sim);
+		_raster.addActionListener(this);
 		
 		_faster.setEnabled(false);
 		_slower.setEnabled(false);
 		_highlight.setSelected(true);
 		_raster.setSelected(true);
 		
-		this.pack();
+		pack();
 	}
 	
 	/**
@@ -135,12 +137,42 @@ public class ALifeRobot extends JFrame implements ActionListener {
      */
 	@Override
 	public void actionPerformed(ActionEvent e) {
+		if(e.getSource() == _back) {
+			sim.backtrack();
+		}
+		if(e.getSource() == _step) {
+			sim.step();
+		}
 		if(e.getActionCommand().equals("Run")) {
 			_back.setEnabled(false);
 			_step.setEnabled(false);
 			_faster.setEnabled(true);
 			_slower.setEnabled(true);
 			_run.setText("Stop");
+			Thread t = new Thread(sim);
+			t.start();
+		}
+		if(e.getSource() == _faster) {
+			sim.increaseAnimationSpeed();
+		}
+		if(e.getSource() == _slower) {
+			sim.decreaseAnimationSpeed();
+		}
+		if(e.getActionCommand().equals("Stop")) {
+			sim.stopAnimation();
+		}
+		if(e.getSource() == _reset) {
+			sim.reset();
+			_strategy.setSelectedIndex(sim.getStrategy());
+		}
+		if(e.getSource() == _strategy) {
+			sim.setStrategy(_strategy.getSelectedIndex());
+		}
+		if(e.getSource() == _highlight) {
+			sim.paintHighlights(_highlight.isSelected());
+		}
+		if(e.getSource() == _raster) {
+			sim.paintRaster(_raster.isSelected());
 		}
 		if(e.getActionCommand().equals("Stop") || e.getActionCommand().equals("Reset")) {
 			_back.setEnabled(true);
@@ -149,11 +181,8 @@ public class ALifeRobot extends JFrame implements ActionListener {
 			_slower.setEnabled(false);
 			_run.setText("Run");
 		}
-		if(e.getActionCommand().equals("Reset")) {
-			_strategy.setSelectedIndex(sim.getStrategy());
-		}
 		if(e.getSource() == _zoomIn) {
-			int current = sim.getPixelSize();
+			int current = sim.pixelSize();
 			current++;
 			if(current <= 21) {
 				sim.setPixelSize(current);
@@ -161,12 +190,13 @@ public class ALifeRobot extends JFrame implements ActionListener {
 			}
 		}
 		if(e.getSource() == _zoomOut) {
-			int current = sim.getPixelSize();
+			int current = sim.pixelSize();
 			current--;
 			if(current >= 5) {
 				sim.setPixelSize(current);
 				pack();
 			}
 		}
+		repaint();
 	}
 }

@@ -21,17 +21,20 @@ public class Robot {
 	public volatile int strategy = 0;
 	
 	/** x-coordinate on the grid */
-	public int x;
+	private int _x;
+	/** @return x-coordinate on the grid */
+	public int x() {return _x;}
 	/** y-coordinate on the grid */
-	public int y;
+	private int _y;
+	/** @return y-coordinate on the grid */
+	public int y() {return _y;}
 	/** Current direction of the robot */
-	public int direction;
+	private int _direction;
+	/** @return Current direction of the robot */
+	public int direction() {return _direction;}
 	
 	/**
 	 * Defines the state of the robot.
-	 * 
-	 * @author Martin
-	 *
 	 */
 	private class State {
 		public int x;
@@ -66,9 +69,9 @@ public class Robot {
 	 * @param gridSize Side length of the grid
 	 */
 	public Robot(int startX, int startY, int direction, int[][] grid, int gridSize) {
-		x = startX;
-		y = startY;
-		this.direction = direction;
+		_x = startX;
+		_y = startY;
+		this._direction = direction;
 		_gridSize = gridSize;
 		_grid = grid;
 		_history = new Stack<State>();
@@ -81,8 +84,8 @@ public class Robot {
 	 * @param y New y-coordinate
 	 */
 	public void setPosition(int x, int y) {
-		this.x = x;
-		this.y = y;
+		this._x = x;
+		this._y = y;
 		_history = new Stack<State>();
 	}
 	
@@ -93,8 +96,8 @@ public class Robot {
 		State s = null;
 		if(!_history.isEmpty())
 			s = _history.lastElement();
-		if(s == null || !(s.x == x && s.y == y && s.direction == direction))
-			_history.push(new State(x,y,direction));
+		if(s == null || !(s.x == _x && s.y == _y && s.direction == _direction))
+			_history.push(new State(_x,_y,_direction));
 		
 		for(int x=0;x<_gridSize;x++) {
 			for(int y=0;y<_gridSize;y++) {
@@ -103,7 +106,7 @@ public class Robot {
 				}
 			}
 		}
-		_grid[x][y] = 250;
+		_grid[_x][_y] = 250;
 		
 		if(strategy == 0)
 			breitenbergStep();
@@ -116,21 +119,21 @@ public class Robot {
 	 */
 	public void breitenbergStep() {
 		
-		if(leftCells() > rightCells())
-			direction = turn(1);
-		else if(rightCells() > leftCells())
-			direction = turn(-1);
+		if(wallsToTheLeft() > wallsToTheRight())
+			turn(1);
+		else if(wallsToTheRight() > wallsToTheLeft())
+			turn(-1);
 
 //		if(_grid[facingX()][facingY()] != 1) {
 		if(!pathBlocked(0)) {
-			x = facingX();
-			y = facingY();
+			_x = facingX();
+			_y = facingY();
 		}
-		else if(rightCells() == leftCells()) {
+		else if(wallsToTheRight() == wallsToTheLeft()) {
 			if(Math.random()<0.5)
-				direction = turn(-1);
+				turn(-1);
 			else
-				direction = turn(1);
+				turn(1);
 		}
 	}
 	
@@ -139,28 +142,28 @@ public class Robot {
 	 */
 	public void leftHandStep() {
 		if(noWallAround()) {
-			x = facingX();
-			y = facingY();
+			_x = facingX();
+			_y = facingY();
 			return;
 		}
 		
 		if(pathBlocked(0)) {
 			if(!(pathBlocked(-1) && pathBlocked(-2) && pathBlocked(-3))) {
-				direction = turn(-1);
+				turn(-1);
 			}
 			else {
-				direction = turn(1);
+				turn(1);
 			}
 			return;
 		}
 		
 		if(pathBlocked(-1)) {
-			x = facingX();
-			y = facingY();
+			_x = facingX();
+			_y = facingY();
 			return;
 		}
 		else {
-			direction = turn(-1);
+			turn(-1);
 		}
 	}
 	
@@ -170,10 +173,10 @@ public class Robot {
 	 * @return true iff the direction is blocked
 	 */
 	public boolean pathBlocked(int offset) {
-		if(_grid[facingX(turn(offset))][facingY(turn(offset))] == 1) return true;
-		if(turn(offset)%2 == 1) {
-			if(_grid[facingX(turn(offset-1))][facingY(turn(offset-1))] == 1 &&
-					_grid[facingX(turn(offset+1))][facingY(turn(offset+1))] == 1) {
+		if(_grid[facingX(getDirection(offset))][facingY(getDirection(offset))] == 1) return true;
+		if(getDirection(offset)%2 == 1) {
+			if(_grid[facingX(getDirection(offset-1))][facingY(getDirection(offset-1))] == 1 &&
+					_grid[facingX(getDirection(offset+1))][facingY(getDirection(offset+1))] == 1) {
 				return true;
 			}
 		}
@@ -186,7 +189,7 @@ public class Robot {
 	public boolean noWallAround() {
 		int count = 0;
 		for(int i=0;i<8;i++) {
-			if(_grid[facingX(turn(i))][facingY(turn(i))] == 1)
+			if(_grid[facingX(getDirection(i))][facingY(getDirection(i))] == 1)
 				count++;
 		}
 		return count == 0;
@@ -197,34 +200,38 @@ public class Robot {
 	 * A negative value is interpreted as a left turn, a positive
 	 * as a right turn.
 	 * 
-	 * @param dir Turning direction
+	 * @param offset Turning direction
 	 * @return New direction
 	 */
-	public int turn(int dir) {
-		if(dir>-8 && dir<8) {
-			return (direction+8+dir)%8;
+	public int getDirection(int offset) {
+		if(offset>-8 && offset<8) {
+			return (_direction+8+offset)%8;
 		}
-		return direction;
+		return _direction;
+	}
+	
+	public void turn(int offset) {
+		_direction = getDirection(offset);
 	}
 	
 	/**
 	 * Calculates how many walls are to the left
 	 * @return Number of Walls
 	 */
-	public int leftCells() {
+	public int wallsToTheLeft() {
 		int sum = 0;
-		if(_grid[facingX(turn(-1))][facingY(turn(-1))] == 1) sum++;
-		if(_grid[facingX(turn(-2))][facingY(turn(-2))] == 1) sum++;
+		if(_grid[facingX(getDirection(-1))][facingY(getDirection(-1))] == 1) sum++;
+		if(_grid[facingX(getDirection(-2))][facingY(getDirection(-2))] == 1) sum++;
 		return sum;
 	}
 	 /**
 	  * Calculates how many walls are to the right
 	  * @return Number of Walls
 	  */
-	public int rightCells() {
+	public int wallsToTheRight() {
 		int sum = 0;
-		if(_grid[facingX(turn(1))][facingY(turn(1))] == 1) sum++;
-		if(_grid[facingX(turn(2))][facingY(turn(2))] == 1) sum++;
+		if(_grid[facingX(getDirection(1))][facingY(getDirection(1))] == 1) sum++;
+		if(_grid[facingX(getDirection(2))][facingY(getDirection(2))] == 1) sum++;
 		return sum;
 	}
 	
@@ -234,9 +241,9 @@ public class Robot {
 	public void backtrack() {
 		if(!_history.isEmpty()) {
 			State s = _history.peek();
-			x = s.x;
-			y = s.y;
-			direction = s.direction;
+			_x = s.x;
+			_y = s.y;
+			_direction = s.direction;
 			_history.pop();
 		}
 	}
@@ -245,14 +252,14 @@ public class Robot {
 	 * @return x-coordinate of the faced cell
 	 */
 	public int facingX() {
-		return facingX(direction);
+		return facingX(_direction);
 	}
 	
 	/**
 	 * @return y-coordinate of the faced cell
 	 */
 	public int facingY() {
-		return facingY(direction);
+		return facingY(_direction);
 	}
 	
 	/**
@@ -262,19 +269,19 @@ public class Robot {
 	public int facingX(int direction) {
 		switch (direction) {
 		case NE:
-			return x+1;
+			return _x+1;
 		case E:
-			return x+1;
+			return _x+1;
 		case SE:
-			return x+1;
+			return _x+1;
 		case SW:
-			return x-1;
+			return _x-1;
 		case W:
-			return x-1;
+			return _x-1;
 		case NW:
-			return x-1;
+			return _x-1;
 		default:
-			return x;
+			return _x;
 		}
 	}
 	
@@ -285,19 +292,19 @@ public class Robot {
 	public int facingY(int direction) {
 		switch (direction) {
 		case N:
-			return y+1;
+			return _y+1;
 		case NE:
-			return y+1;
+			return _y+1;
 		case SE:
-			return y-1;
+			return _y-1;
 		case S:
-			return y-1;
+			return _y-1;
 		case SW:
-			return y-1;
+			return _y-1;
 		case NW:
-			return y+1;
+			return _y+1;
 		default:
-			return y;
+			return _y;
 		}
 	}
 }
