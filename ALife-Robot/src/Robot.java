@@ -2,14 +2,23 @@ import java.util.Stack;
 
 public class Robot {
 	
-	public static final int N = 0;
-	public static final int NE = 1;
-	public static final int E = 2;
-	public static final int SE = 3;
-	public static final int S = 4;
-	public static final int SW = 5;
-	public static final int W = 6;
-	public static final int NW = 7;
+	/** To represent the direction the robot can be turned to */
+	public static enum Direction {
+		N, NE, E, SE, S, SW, W, NW;
+		
+		/**
+		 * North is at 0 0egrees. Increase by 45 for every clockwise turn.
+		 * 
+		 * @return
+		 */
+		public int degree() {
+			return ordinal()*45;
+		}
+	}
+	
+	public static enum Strategy {
+		Breitenberg, WallFollow;
+	}
 	
 	/** Side length of the grid containing this robot */
 	private int _gridSize;
@@ -18,7 +27,7 @@ public class Robot {
 	/** Contains all former positions of the robot */
 	private Stack<State> _history;
 	/** chosen strategy */
-	public volatile int strategy = 0;
+	public volatile Strategy strategy = Strategy.Breitenberg;
 	
 	/** x-coordinate on the grid */
 	private int _x;
@@ -29,9 +38,9 @@ public class Robot {
 	/** @return y-coordinate on the grid */
 	public int y() {return _y;}
 	/** Current direction of the robot */
-	private int _direction;
+	private Direction _direction;
 	/** @return Current direction of the robot */
-	public int direction() {return _direction;}
+	public Direction direction() {return _direction;}
 	
 	/**
 	 * Defines the state of the robot.
@@ -39,9 +48,9 @@ public class Robot {
 	private class State {
 		public int x;
 		public int y;
-		public int direction;
+		public Direction direction;
 		
-		public State(int x, int y, int direction) {
+		public State(int x, int y, Direction direction) {
 			this.x = x;
 			this.y = y;
 			this.direction = direction;
@@ -56,7 +65,7 @@ public class Robot {
 	 * @param gridSize Side length of the grid
 	 */
 	public Robot(int[][] grid, int gridSize) {
-		this(48,17,S,grid,gridSize);
+		this(48,17,Direction.S,grid,gridSize);
 	}
 	
 	/**
@@ -68,7 +77,7 @@ public class Robot {
 	 * @param grid The grid
 	 * @param gridSize Side length of the grid
 	 */
-	public Robot(int startX, int startY, int direction, int[][] grid, int gridSize) {
+	public Robot(int startX, int startY, Direction direction, int[][] grid, int gridSize) {
 		_x = startX;
 		_y = startY;
 		this._direction = direction;
@@ -108,9 +117,9 @@ public class Robot {
 		}
 		_grid[_x][_y] = 250;
 		
-		if(strategy == 0)
+		if(strategy == Strategy.Breitenberg)
 			breitenbergStep();
-		else
+		else if(strategy == Strategy.WallFollow)
 			leftHandStep();
 	}
 	
@@ -174,7 +183,7 @@ public class Robot {
 	 */
 	public boolean pathBlocked(int offset) {
 		if(_grid[facingX(getDirection(offset))][facingY(getDirection(offset))] == 1) return true;
-		if(getDirection(offset)%2 == 1) {
+		if(getDirection(offset).ordinal()%2 == 1) {
 			if(_grid[facingX(getDirection(offset-1))][facingY(getDirection(offset-1))] == 1 &&
 					_grid[facingX(getDirection(offset+1))][facingY(getDirection(offset+1))] == 1) {
 				return true;
@@ -203,9 +212,9 @@ public class Robot {
 	 * @param offset Turning direction
 	 * @return New direction
 	 */
-	public int getDirection(int offset) {
+	public Direction getDirection(int offset) {
 		if(offset>-8 && offset<8) {
-			return (_direction+8+offset)%8;
+			return Direction.values()[(_direction.ordinal()+8+offset)%8];
 		}
 		return _direction;
 	}
@@ -266,7 +275,7 @@ public class Robot {
 	 * @param direction Direction
 	 * @return x-coodrinate of the cell in the given direction
 	 */
-	public int facingX(int direction) {
+	public int facingX(Direction direction) {
 		switch (direction) {
 		case NE:
 			return _x+1;
@@ -289,7 +298,7 @@ public class Robot {
 	 * @param direction Direction
 	 * @return y-coodrinate of the cell in the given direction
 	 */
-	public int facingY(int direction) {
+	public int facingY(Direction direction) {
 		switch (direction) {
 		case N:
 			return _y+1;

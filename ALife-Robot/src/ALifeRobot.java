@@ -42,8 +42,8 @@ public class ALifeRobot extends JFrame implements ActionListener {
 	private JButton _reset = 
 			new JButton("Reset");
 	/** Strategy choice */
-	private JComboBox<String> _strategy =
-			new JComboBox<String>(RobotGrid.STRATEGIES);
+	private JComboBox<Robot.Strategy> _strategy =
+			new JComboBox<Robot.Strategy>(Robot.Strategy.values());
 	/** Check box to toggle highlighted cells */
 	private JCheckBox _highlight =
 			new JCheckBox("Highlight Cells");
@@ -163,10 +163,10 @@ public class ALifeRobot extends JFrame implements ActionListener {
 		}
 		if(e.getSource() == _reset) {
 			sim.reset();
-			_strategy.setSelectedIndex(sim.getStrategy());
+			_strategy.setSelectedIndex(sim.getStrategy().ordinal());
 		}
 		if(e.getSource() == _strategy) {
-			sim.setStrategy(_strategy.getSelectedIndex());
+			sim.setStrategy((Robot.Strategy)_strategy.getSelectedItem());
 		}
 		if(e.getSource() == _highlight) {
 			sim.paintHighlights(_highlight.isSelected());

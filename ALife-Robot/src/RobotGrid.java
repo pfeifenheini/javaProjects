@@ -15,12 +15,12 @@ public class RobotGrid extends JPanel implements Runnable {
 	 */
 	private static final long serialVersionUID = 1L;
 	
+	/** default pixel size */
 	public static final int DEFAULT_PIXEL_SIZE = 13;
+	/** default grid side length */
 	public static final int DEFAULT_GRID_SIZE = 50;
 	/** default animation delay */
 	public static final int DEFAULT_ANIMATION_DELAY = 500;
-	/** list of possible strategies */
-	public static final String[] STRATEGIES = {"Breitenberg", "Wall Follow"};
 	
 	/** the grid */
 	private int[][] _grid;
@@ -146,12 +146,12 @@ public class RobotGrid extends JPanel implements Runnable {
 		
 		// Highlight observed cells
 		if(_highlightCells) {
-			if(_robot.strategy == 0) {
+			if(_robot.strategy == Robot.Strategy.Breitenberg) {
 				for(int i=-2;i<3;i++)
 					if(i != 0)
 						paintHighlightedCells(g, i);
 			}
-			else {
+			else if(_robot.strategy == Robot.Strategy.WallFollow){
 				for(int i=1;i<8;i++)
 					paintHighlightedCells(g, i);
 			}
@@ -177,7 +177,7 @@ public class RobotGrid extends JPanel implements Runnable {
 		
 		int centerX = _robot.x()*_pixelSize;
 		int centerY = (_gridSize-_robot.y()-1)*_pixelSize;
-		int angle = _robot.direction()*(-45)-245;
+		int angle = -_robot.direction().degree()-245;
 		
 		g.fillArc(centerX-_pixelSize, centerY-_pixelSize, 3*_pixelSize, 3*_pixelSize, angle, -50);
 		g.setColor(Color.black);
@@ -203,7 +203,7 @@ public class RobotGrid extends JPanel implements Runnable {
 	/**
 	 * @return current strategy
 	 */
-	public int getStrategy() {
+	public Robot.Strategy getStrategy() {
 		return _robot.strategy;
 	}
 	
@@ -230,14 +230,16 @@ public class RobotGrid extends JPanel implements Runnable {
 
 	/**
 	 * Sets the state of the given cell.
+	 * Cells on the border can not be changed (have to be walls).
 	 * 
 	 * @param x x-coodrinate
 	 * @param y y-coordinate
 	 * @param state new state
 	 */
 	public void setState(int x, int y, int state) {
-		if(coordinatesOnGrid(x, y))
-			_grid[x][y] = state;
+		if(x<=0 || x>=_gridSize-1) return;
+		if(y<=0 || y>=_gridSize-1) return;
+		_grid[x][y] = state;
 	}
 
 	/**
@@ -332,7 +334,7 @@ public class RobotGrid extends JPanel implements Runnable {
 			}
 		}
 		readFile();
-		int currentStrategy = _robot.strategy;
+		Robot.Strategy currentStrategy = _robot.strategy;
 		_robot = new Robot(_grid,_gridSize);
 		_robot.strategy = currentStrategy;
 		_animationDelay = DEFAULT_ANIMATION_DELAY;
@@ -343,7 +345,7 @@ public class RobotGrid extends JPanel implements Runnable {
 	 * 
 	 * @param strategy The new strategy
 	 */
-	public void setStrategy(int strategy) {
+	public void setStrategy(Robot.Strategy strategy) {
 		_robot.strategy = strategy;
 	}
 
