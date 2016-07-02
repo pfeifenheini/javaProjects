@@ -1,14 +1,17 @@
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.Scanner;
 
 import javax.swing.JPanel;
+import javax.swing.Timer;
 
-public class RobotGrid extends JPanel implements Runnable { 
+public class RobotGrid extends JPanel implements ActionListener { 
 
 	/**
 	 * 
@@ -27,15 +30,12 @@ public class RobotGrid extends JPanel implements Runnable {
 	/** the robot */
 	private Robot _robot;
 	
-	/** */
-	private volatile boolean _isRunning = false;
-	public boolean isRunning() {return _isRunning;}
+	/** timer for the animation */
+	private Timer _timer;
 	/** */
 	private volatile boolean _highlightCells = true;
 	/** */
 	private volatile boolean _showRaster = true;
-	/** delay between two animation steps */
-	private volatile int _animationDelay = DEFAULT_ANIMATION_DELAY;
 	/** pixel size of a cell */
 	private int _pixelSize = DEFAULT_PIXEL_SIZE;
 	/** @return pixel size of a cell */
@@ -49,6 +49,8 @@ public class RobotGrid extends JPanel implements Runnable {
 	public RobotGrid() {
 		_grid = new int[_gridSize][_gridSize];
 		_robot = new Robot(_grid,_gridSize);
+		_timer = new Timer(0,this);
+		_timer.setDelay(DEFAULT_ANIMATION_DELAY);
 		readFile();
 		setPreferredSize(new Dimension(_gridSize*_pixelSize,_gridSize*_pixelSize));
 		setBackground(Color.white);
@@ -90,25 +92,71 @@ public class RobotGrid extends JPanel implements Runnable {
 			}
 		}
 	}
-	
+
 	/**
-	 * Overrides run method of Runnable interface.
-	 * Animates one step of the robot after another.
+	 * Starts the animation.
 	 */
-	@Override
-	public void run() {
-		_isRunning = true;
-		while(_isRunning) {
-			_robot.step();
-			repaint();
-			try {
-				Thread.sleep(_animationDelay);
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
-		}
+	public void startAnimation() {
+		_timer.start();
 	}
 	
+	/**
+	 * increases the animation speed.
+	 */
+	public void increaseAnimationSpeed() {
+		_timer.setDelay(Math.max(5, (int)(_timer.getDelay()/1.5)));
+		_timer.restart();
+	}
+
+	/**
+	 * Decreases the animation speed.
+	 */
+	public void decreaseAnimationSpeed() {
+		_timer.setDelay(Math.min(2000, (int)(_timer.getDelay()*1.5)));
+	}
+
+	/**
+	 * Animation step that is called by the timer.
+	 */
+	@Override
+	public void actionPerformed(ActionEvent arg0) {
+		_robot.step();
+		repaint();
+	}
+	
+	/**
+	 * Performs one step of the robot.
+	 */
+	public void step() {
+		_robot.step();
+	}
+
+	/**
+	 * Stops the animation
+	 */
+	public void stopAnimation() {
+		_timer.stop();
+	}
+	
+	/**
+	 * Sets the pixel size.
+	 * 
+	 * @param size the new size
+	 */
+	public void setPixelSize(int size) {
+		_pixelSize = size;
+		setPreferredSize(new Dimension(_gridSize*_pixelSize,_gridSize*_pixelSize));
+	}
+
+	/**
+	 * Sets whether the raster lines should be painted.
+	 * 
+	 * @param selected
+	 */
+	public void paintRaster(boolean selected) {
+		_showRaster = selected;
+	}
+
 	/**
 	 * Overrides the paintComponent method of the JPanel class.
 	 * Draws the grid and the robot in the scene. Highlights
@@ -193,6 +241,15 @@ public class RobotGrid extends JPanel implements Runnable {
 	}
 	
 	/**
+	 * Sets whether the relevant neighbourhood of the robot should be highlighted.
+	 * 
+	 * @param selected
+	 */
+	public void paintHighlights(boolean selected) {
+		_highlightCells = selected;
+	}
+
+	/**
 	 * Highlights the cells which the robot observes to determine
 	 * it movements.
 	 * 
@@ -217,15 +274,15 @@ public class RobotGrid extends JPanel implements Runnable {
 	}
 	
 	/**
-	 * Sets the pixel size.
+	 * Sets the strategy.
 	 * 
-	 * @param size the new size
+	 * @param strategy The new strategy
 	 */
-	public void setPixelSize(int size) {
-		_pixelSize = size;
-		setPreferredSize(new Dimension(_gridSize*_pixelSize,_gridSize*_pixelSize));
+	public void setStrategy(Robot.Strategy strategy) {
+		_robot.setStrategy(strategy);
+		clearGrid();
 	}
-	
+
 	/**
 	 * Tests whether the robot is at the given position.
 	 * 
@@ -238,17 +295,28 @@ public class RobotGrid extends JPanel implements Runnable {
 	}
 
 	/**
-	 * Sets the state of the given cell.
-	 * Cells on the border can not be changed (have to be walls).
+	 * Tests wheter the given coordinates lie on the grid. 
 	 * 
 	 * @param x x-coodrinate
-	 * @param y y-coordinate
-	 * @param state new state
+	 * @param y y-coodrinate
+	 * @return true iff the coordinates lie on the grid
 	 */
-	public void setState(int x, int y, int state) {
-		if(x<=0 || x>=_gridSize-1) return;
-		if(y<=0 || y>=_gridSize-1) return;
-		_grid[x][y] = state;
+	public boolean coordinatesOnGrid(int x, int y) {
+		if(x<0 || x>=_gridSize) return false;
+		if(y<0 || y>=_gridSize) return false;
+		return true;
+	}
+
+	/**
+	 * Sets the position of the robot.
+	 * 
+	 * @param x x-coordinate
+	 * @param y y-coordinate
+	 */
+	public void moveRobot(int x, int y) {
+		if(coordinatesOnGrid(x, y))
+			_robot.setPosition(x, y);
+		clearGrid();
 	}
 
 	/**
@@ -265,27 +333,17 @@ public class RobotGrid extends JPanel implements Runnable {
 	}
 
 	/**
-	 * Sets the position of the robot.
+	 * Sets the state of the given cell.
+	 * Cells on the border can not be changed (have to be walls).
 	 * 
-	 * @param x x-coordinate
+	 * @param x x-coodrinate
 	 * @param y y-coordinate
+	 * @param state new state
 	 */
-	public void moveRobot(int x, int y) {
-		if(coordinatesOnGrid(x, y))
-			_robot.setPosition(x, y);
-		clearGrid();
-	}
-	
-	/**
-	 * Sets all cells that are no walls to 0
-	 */
-	public void clearGrid() {
-		for(int i=0;i<_gridSize;i++) {
-			for(int j=0;j<_gridSize;j++) {
-				if(_grid[i][j] != 1)
-					_grid[i][j] = 0;
-			}
-		}
+	public void setState(int x, int y, int state) {
+		if(x<=0 || x>=_gridSize-1) return;
+		if(y<=0 || y>=_gridSize-1) return;
+		_grid[x][y] = state;
 	}
 
 	/**
@@ -308,47 +366,20 @@ public class RobotGrid extends JPanel implements Runnable {
 	 * Performs a backtracking step.
 	 */
 	public void backtrack() {
-//		_grid[_robot.x()][_robot.y()] = 0;
 		_robot.backtrack();
-	}
-
-	/**
-	 * Performs one step of the robot.
-	 */
-	public void step() {
-		_robot.step();
-	}
-
-	/**
-	 * increases the animation speed.
-	 */
-	public void increaseAnimationSpeed() {
-		_animationDelay = Math.max(5, (int)(_animationDelay/1.5));
-	}
-
-	/**
-	 * Decreases the animation speed.
-	 */
-	public void decreaseAnimationSpeed() {
-		_animationDelay = Math.min(2000, (int)(_animationDelay*1.5));
-	}
-
-	/**
-	 * Stops the animation if it is running as a thread.
-	 */
-	public void stopAnimation() {
-		_isRunning = false;
 	}
 
 	/**
 	 * Resets the whole grid.
 	 */
 	public void reset() {
-		_isRunning = false;
-		try {
-			Thread.sleep(_animationDelay+100);
-		} catch (InterruptedException e1) {
-			e1.printStackTrace();
+		stopAnimation();
+		while(_timer.isRunning()) {
+			try {
+				Thread.sleep(100);
+			} catch (InterruptedException e1) {
+				e1.printStackTrace();
+			}
 		}
 		for(int x=0;x<_gridSize;x++) {
 			for(int y=0;y<_gridSize;y++) {
@@ -359,47 +390,18 @@ public class RobotGrid extends JPanel implements Runnable {
 		Robot.Strategy currentStrategy = _robot.strategy();
 		_robot = new Robot(_grid,_gridSize);
 		_robot.setStrategy(currentStrategy);
-		_animationDelay = DEFAULT_ANIMATION_DELAY;
+		_timer.setDelay(DEFAULT_ANIMATION_DELAY);
 	}
 
 	/**
-	 * Sets the strategy.
-	 * 
-	 * @param strategy The new strategy
+	 * Sets all cells that are no walls to 0
 	 */
-	public void setStrategy(Robot.Strategy strategy) {
-		_robot.setStrategy(strategy);
-		clearGrid();
-	}
-
-	/**
-	 * Sets whether the relevant neighbourhood of the robot should be highlighted.
-	 * 
-	 * @param selected
-	 */
-	public void paintHighlights(boolean selected) {
-		_highlightCells = selected;
-	}
-
-	/**
-	 * Sets whether the raster lines should be painted.
-	 * 
-	 * @param selected
-	 */
-	public void paintRaster(boolean selected) {
-		_showRaster = selected;
-	}
-	
-	/**
-	 * Tests wheter the given coordinates lie on the grid. 
-	 * 
-	 * @param x x-coodrinate
-	 * @param y y-coodrinate
-	 * @return true iff the coordinates lie on the grid
-	 */
-	public boolean coordinatesOnGrid(int x, int y) {
-		if(x<0 || x>=_gridSize) return false;
-		if(y<0 || y>=_gridSize) return false;
-		return true;
+	public void clearGrid() {
+		for(int i=0;i<_gridSize;i++) {
+			for(int j=0;j<_gridSize;j++) {
+				if(_grid[i][j] != 1)
+					_grid[i][j] = 0;
+			}
+		}
 	}
 }

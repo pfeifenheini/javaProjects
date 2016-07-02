@@ -149,8 +149,7 @@ public class ALifeRobot extends JFrame implements ActionListener {
 			_faster.setEnabled(true);
 			_slower.setEnabled(true);
 			_run.setText("Stop");
-			Thread t = new Thread(sim);
-			t.start();
+			sim.startAnimation();
 		}
 		if(e.getSource() == _faster) {
 			sim.increaseAnimationSpeed();

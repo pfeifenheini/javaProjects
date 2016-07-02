@@ -103,6 +103,30 @@ public class Robot {
 		_history.clear();
 	}
 	
+	public void setStrategy(Strategy strategy) {
+		_strategy = strategy;
+		_history.clear();
+	}
+
+	public void turn(int offset) {
+		_direction = getDirection(offset);
+	}
+
+	/**
+	 * Calculates the direction relative to the current direction.
+	 * A negative value is interpreted as a left turn, a positive
+	 * as a right turn.
+	 * 
+	 * @param offset Turning direction
+	 * @return New direction
+	 */
+	public Direction getDirection(int offset) {
+		if(offset>-8 && offset<8) {
+			return Direction.values()[(_direction.ordinal()+8+offset)%8];
+		}
+		return _direction;
+	}
+
 	/**
 	 * Executes on step of the robot.
 	 */
@@ -165,6 +189,28 @@ public class Robot {
 	}
 	
 	/**
+	 * Calculates how many walls are to the left
+	 * @return Number of Walls
+	 */
+	public int wallsToTheLeft() {
+		int sum = 0;
+		if(_grid[facingX(getDirection(-1))][facingY(getDirection(-1))] == 1) sum++;
+		if(_grid[facingX(getDirection(-2))][facingY(getDirection(-2))] == 1) sum++;
+		return sum;
+	}
+
+	/**
+	  * Calculates how many walls are to the right
+	  * @return Number of Walls
+	  */
+	public int wallsToTheRight() {
+		int sum = 0;
+		if(_grid[facingX(getDirection(1))][facingY(getDirection(1))] == 1) sum++;
+		if(_grid[facingX(getDirection(2))][facingY(getDirection(2))] == 1) sum++;
+		return sum;
+	}
+
+	/**
 	 * Wall following with left hand rule
 	 */
 	public void leftHandStep() {
@@ -194,6 +240,18 @@ public class Robot {
 		}
 	}
 	
+	/**
+	 * @return true iff all eight cells around the robot are free
+	 */
+	public boolean noWallAround() {
+		int count = 0;
+		for(int i=0;i<8;i++) {
+			if(_grid[facingX(getDirection(i))][facingY(getDirection(i))] == 1)
+				count++;
+		}
+		return count == 0;
+	}
+
 	public void DFSStep() {
 		_grid[_x][_y] = -1;
 		int rand = (int)(Math.random()*5);
@@ -219,6 +277,19 @@ public class Robot {
 	}
 	
 	/**
+	 * Executes a backtracking step
+	 */
+	public void backtrack() {
+		if(!_history.isEmpty()) {
+			State s = _history.peek();
+			_x = s.x;
+			_y = s.y;
+			_direction = s.direction;
+			_history.pop();
+		}
+	}
+
+	/**
 	 * 
 	 * @param offset Offset
 	 * @return true iff the direction is blocked
@@ -232,71 +303,6 @@ public class Robot {
 			}
 		}
 		return false;
-	}
-	
-	/**
-	 * @return true iff all eight cells around the robot are free
-	 */
-	public boolean noWallAround() {
-		int count = 0;
-		for(int i=0;i<8;i++) {
-			if(_grid[facingX(getDirection(i))][facingY(getDirection(i))] == 1)
-				count++;
-		}
-		return count == 0;
-	}
-	
-	/**
-	 * Calculates the direction relative to the current direction.
-	 * A negative value is interpreted as a left turn, a positive
-	 * as a right turn.
-	 * 
-	 * @param offset Turning direction
-	 * @return New direction
-	 */
-	public Direction getDirection(int offset) {
-		if(offset>-8 && offset<8) {
-			return Direction.values()[(_direction.ordinal()+8+offset)%8];
-		}
-		return _direction;
-	}
-	
-	public void turn(int offset) {
-		_direction = getDirection(offset);
-	}
-	
-	/**
-	 * Calculates how many walls are to the left
-	 * @return Number of Walls
-	 */
-	public int wallsToTheLeft() {
-		int sum = 0;
-		if(_grid[facingX(getDirection(-1))][facingY(getDirection(-1))] == 1) sum++;
-		if(_grid[facingX(getDirection(-2))][facingY(getDirection(-2))] == 1) sum++;
-		return sum;
-	}
-	 /**
-	  * Calculates how many walls are to the right
-	  * @return Number of Walls
-	  */
-	public int wallsToTheRight() {
-		int sum = 0;
-		if(_grid[facingX(getDirection(1))][facingY(getDirection(1))] == 1) sum++;
-		if(_grid[facingX(getDirection(2))][facingY(getDirection(2))] == 1) sum++;
-		return sum;
-	}
-	
-	/**
-	 * Executes a backtracking step
-	 */
-	public void backtrack() {
-		if(!_history.isEmpty()) {
-			State s = _history.peek();
-			_x = s.x;
-			_y = s.y;
-			_direction = s.direction;
-			_history.pop();
-		}
 	}
 	
 	/**
@@ -357,10 +363,5 @@ public class Robot {
 		default:
 			return _y;
 		}
-	}
-
-	public void setStrategy(Strategy strategy) {
-		_strategy = strategy;
-		_history.clear();
 	}
 }
