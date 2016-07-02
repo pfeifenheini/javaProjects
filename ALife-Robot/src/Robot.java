@@ -369,12 +369,5 @@ public class Robot {
 		if(strategy == Strategy.DFS) {
 			_history.clear();
 		}
-		else {
-			for(State s : _history) {
-				if(_grid[s.x][s.y] < 0) {
-					_grid[s.x][s.y] = 0;
-				}
-			}
-		}
 	}
 }

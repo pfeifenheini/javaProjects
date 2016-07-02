@@ -356,6 +356,12 @@ public class RobotGrid extends JPanel implements Runnable {
 	 */
 	public void setStrategy(Robot.Strategy strategy) {
 		_robot.setStrategy(strategy);
+		for(int x=0;x<_gridSize;x++) {
+			for(int y=0;y<_gridSize;y++) {
+				if(_grid[x][y] < 0)
+					_grid[x][y] = 0;
+			}
+		}
 	}
 
 	/**
