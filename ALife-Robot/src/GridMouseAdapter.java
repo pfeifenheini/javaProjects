@@ -25,7 +25,7 @@ public class GridMouseAdapter extends MouseAdapter {
 	
 	@Override
 	public void mousePressed(MouseEvent e) {
-		if(_grid.isRunning()) return;
+		if(_grid.isAnimating()) return;
 		
 		if(e.getButton() == MouseEvent.BUTTON1) _leftClick = true;
 		else _leftClick = false;
@@ -46,7 +46,7 @@ public class GridMouseAdapter extends MouseAdapter {
 	
 	@Override
 	public void mouseDragged(MouseEvent arg0) {
-		if(_grid.isRunning()) return;
+		if(_grid.isAnimating()) return;
 		
 		if(calcMousePos()) {
 			if(_robotDragged && _grid.getState(_mouseX, _mouseY) != 1) {
@@ -65,7 +65,7 @@ public class GridMouseAdapter extends MouseAdapter {
 	
 	@Override
 	public void mouseReleased(MouseEvent arg0) {
-		if(_grid.isRunning()) return;
+		if(_grid.isAnimating()) return;
 		
 		if(!calcMousePos() && _grid.robotAt(_mouseX, _mouseY) && !_robotChanged) {
 			if(_leftClick) {

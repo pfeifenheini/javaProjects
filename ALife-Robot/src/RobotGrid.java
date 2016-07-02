@@ -100,6 +100,10 @@ public class RobotGrid extends JPanel implements ActionListener {
 		_timer.start();
 	}
 	
+	public boolean isAnimating() {
+		return _timer.isRunning();
+	}
+
 	/**
 	 * increases the animation speed.
 	 */
