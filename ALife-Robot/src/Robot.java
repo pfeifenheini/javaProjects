@@ -218,6 +218,7 @@ public class Robot {
 			turn(1);
 		}
 		_grid[_x][_y] = -2;
+		_direction = _history.peek().direction;
 		_history.pop();
 		backtrack();
 	}
