@@ -140,18 +140,27 @@ public class RobotGrid extends JPanel implements Runnable {
 						g.setColor(Color.getHSBColor(c[0], c[1], c[2]));
 						g.fillOval(x*_pixelSize+1, (_gridSize-y-1)*_pixelSize+1, _pixelSize-2, _pixelSize-2);
 					}
+					
+					if(_grid[x][y] == -1) {
+						g.setColor(Color.green);
+						g.fillOval(x*_pixelSize+1, (_gridSize-y-1)*_pixelSize+1, _pixelSize-2, _pixelSize-2);
+					}
+					else if(_grid[x][y] == -2) {
+						g.setColor(Color.blue);
+						g.fillOval(x*_pixelSize+1, (_gridSize-y-1)*_pixelSize+1, _pixelSize-2, _pixelSize-2);
+					}
 				}
 			}
 		}
 		
 		// Highlight observed cells
 		if(_highlightCells) {
-			if(_robot.strategy == Robot.Strategy.Breitenberg) {
+			if(_robot.strategy() == Robot.Strategy.Breitenberg) {
 				for(int i=-2;i<3;i++)
 					if(i != 0)
 						paintHighlightedCells(g, i);
 			}
-			else if(_robot.strategy == Robot.Strategy.WallFollow){
+			else if(_robot.strategy() == Robot.Strategy.WallFollow){
 				for(int i=1;i<8;i++)
 					paintHighlightedCells(g, i);
 			}
@@ -204,7 +213,7 @@ public class RobotGrid extends JPanel implements Runnable {
 	 * @return current strategy
 	 */
 	public Robot.Strategy getStrategy() {
-		return _robot.strategy;
+		return _robot.strategy();
 	}
 	
 	/**
@@ -286,7 +295,7 @@ public class RobotGrid extends JPanel implements Runnable {
 	 * Performs a backtracking step.
 	 */
 	public void backtrack() {
-		_grid[_robot.x()][_robot.y()] = 0;
+//		_grid[_robot.x()][_robot.y()] = 0;
 		_robot.backtrack();
 	}
 
@@ -334,9 +343,9 @@ public class RobotGrid extends JPanel implements Runnable {
 			}
 		}
 		readFile();
-		Robot.Strategy currentStrategy = _robot.strategy;
+		Robot.Strategy currentStrategy = _robot.strategy();
 		_robot = new Robot(_grid,_gridSize);
-		_robot.strategy = currentStrategy;
+		_robot.setStrategy(currentStrategy);
 		_animationDelay = DEFAULT_ANIMATION_DELAY;
 	}
 
@@ -346,7 +355,7 @@ public class RobotGrid extends JPanel implements Runnable {
 	 * @param strategy The new strategy
 	 */
 	public void setStrategy(Robot.Strategy strategy) {
-		_robot.strategy = strategy;
+		_robot.setStrategy(strategy);
 	}
 
 	/**

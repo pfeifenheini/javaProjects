@@ -17,7 +17,7 @@ public class Robot {
 	}
 	
 	public static enum Strategy {
-		Breitenberg, WallFollow;
+		Breitenberg, WallFollow, DFS;
 	}
 	
 	/** Side length of the grid containing this robot */
@@ -27,7 +27,8 @@ public class Robot {
 	/** Contains all former positions of the robot */
 	private Stack<State> _history;
 	/** chosen strategy */
-	public volatile Strategy strategy = Strategy.Breitenberg;
+	private volatile Strategy _strategy = Strategy.Breitenberg;
+	public Strategy strategy() {return _strategy;}
 	
 	/** x-coordinate on the grid */
 	private int _x;
@@ -54,6 +55,10 @@ public class Robot {
 			this.x = x;
 			this.y = y;
 			this.direction = direction;
+		}
+		
+		public boolean equal(State s) {
+			return s.x == x && s.y == y && s.direction == direction;
 		}
 	}
 	
@@ -95,18 +100,28 @@ public class Robot {
 	public void setPosition(int x, int y) {
 		this._x = x;
 		this._y = y;
-		_history = new Stack<State>();
+		if(_strategy == Strategy.DFS) {
+			for(State s : _history) {
+				_grid[s.x][s.y] = 0;
+			}
+		}
+		_history.clear();
 	}
 	
 	/**
 	 * Executes on step of the robot.
 	 */
 	public void step() {
-		State s = null;
-		if(!_history.isEmpty())
-			s = _history.lastElement();
-		if(s == null || !(s.x == _x && s.y == _y && s.direction == _direction))
-			_history.push(new State(_x,_y,_direction));
+		State last = null, s = new State(_x,_y,_direction);;
+		if(!_history.isEmpty()) {
+			last = _history.peek();
+			if(!last.equal(s))
+				_history.push(s);
+		}
+		else {
+			_history.push(s);
+		}
+		
 		
 		for(int x=0;x<_gridSize;x++) {
 			for(int y=0;y<_gridSize;y++) {
@@ -115,12 +130,20 @@ public class Robot {
 				}
 			}
 		}
-		_grid[_x][_y] = 250;
 		
-		if(strategy == Strategy.Breitenberg)
+		if(_strategy == Strategy.Breitenberg) {
+			_grid[_x][_y] = 250;
 			breitenbergStep();
-		else if(strategy == Strategy.WallFollow)
+			_grid[_x][_y] = 250;
+		}
+		else if(_strategy == Strategy.WallFollow) {
+			_grid[_x][_y] = 250;
 			leftHandStep();
+			_grid[_x][_y] = 250;
+		}
+		else if(_strategy == Strategy.DFS) {
+			DFSStep();
+		}
 	}
 	
 	/**
@@ -174,6 +197,29 @@ public class Robot {
 		else {
 			turn(-1);
 		}
+	}
+	
+	public void DFSStep() {
+		_grid[_x][_y] = -1;
+		int rand = (int)(Math.random()*5);
+		if(rand == 1)
+			turn(-1);
+		else if(rand == 2)
+			turn(1);
+		else
+			turn(0);
+		
+		for(@SuppressWarnings("unused") Direction d : Direction.values()) {
+			if(!pathBlocked(0) && _grid[facingX()][facingY()] >= 0) {
+				_x = facingX();
+				_y = facingY();
+				return;
+			}
+			turn(1);
+		}
+		_grid[_x][_y] = -2;
+		_history.pop();
+		backtrack();
 	}
 	
 	/**
@@ -314,6 +360,20 @@ public class Robot {
 			return _y+1;
 		default:
 			return _y;
+		}
+	}
+
+	public void setStrategy(Strategy strategy) {
+		_strategy = strategy;
+		if(strategy == Strategy.DFS) {
+			_history.clear();
+		}
+		else {
+			for(State s : _history) {
+				if(_grid[s.x][s.y] < 0) {
+					_grid[s.x][s.y] = 0;
+				}
+			}
 		}
 	}
 }
