@@ -169,9 +169,6 @@ public class ALifeRobot extends JFrame implements ActionListener {
 			sim.decreaseAnimationSpeed();
 			_faster.setEnabled(true);
 		}
-		if(e.getActionCommand().equals("Stop")) {
-			sim.stopAnimation();
-		}
 		if(e.getSource() == _reset) {
 			sim.reset();
 			_strategy.setSelectedIndex(sim.getStrategy().ordinal());
@@ -194,6 +191,7 @@ public class ALifeRobot extends JFrame implements ActionListener {
 			sim.paintRaster(_raster.isSelected());
 		}
 		if(e.getActionCommand().equals("Stop") || e.getActionCommand().equals("Reset")) {
+			sim.stopAnimation();
 			if(sim.getStrategy() == Robot.Strategy.DFS) {
 				_back.setEnabled(false);
 			}
