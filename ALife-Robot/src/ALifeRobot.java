@@ -169,9 +169,11 @@ public class ALifeRobot extends JFrame implements ActionListener {
 			sim.setStrategy((Robot.Strategy)_strategy.getSelectedItem());
 			if(sim.getStrategy() == Robot.Strategy.DFS) {
 				_back.setEnabled(false);
+				_highlight.setEnabled(false);
 			}
 			else {
 				_back.setEnabled(true);
+				_highlight.setEnabled(true);
 			}
 		}
 		if(e.getSource() == _highlight) {

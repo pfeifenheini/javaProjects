@@ -100,11 +100,6 @@ public class Robot {
 	public void setPosition(int x, int y) {
 		this._x = x;
 		this._y = y;
-		if(_strategy == Strategy.DFS) {
-			for(State s : _history) {
-				_grid[s.x][s.y] = 0;
-			}
-		}
 		_history.clear();
 	}
 	
@@ -366,8 +361,6 @@ public class Robot {
 
 	public void setStrategy(Strategy strategy) {
 		_strategy = strategy;
-		if(strategy == Strategy.DFS) {
-			_history.clear();
-		}
+		_history.clear();
 	}
 }

@@ -273,6 +273,19 @@ public class RobotGrid extends JPanel implements Runnable {
 	public void moveRobot(int x, int y) {
 		if(coordinatesOnGrid(x, y))
 			_robot.setPosition(x, y);
+		clearGrid();
+	}
+	
+	/**
+	 * Sets all cells that are no walls to 0
+	 */
+	public void clearGrid() {
+		for(int i=0;i<_gridSize;i++) {
+			for(int j=0;j<_gridSize;j++) {
+				if(_grid[i][j] != 1)
+					_grid[i][j] = 0;
+			}
+		}
 	}
 
 	/**
@@ -356,12 +369,7 @@ public class RobotGrid extends JPanel implements Runnable {
 	 */
 	public void setStrategy(Robot.Strategy strategy) {
 		_robot.setStrategy(strategy);
-		for(int x=0;x<_gridSize;x++) {
-			for(int y=0;y<_gridSize;y++) {
-				if(_grid[x][y] < 0)
-					_grid[x][y] = 0;
-			}
-		}
+		clearGrid();
 	}
 
 	/**
