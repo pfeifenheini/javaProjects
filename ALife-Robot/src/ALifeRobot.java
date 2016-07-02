@@ -146,16 +146,28 @@ public class ALifeRobot extends JFrame implements ActionListener {
 		if(e.getActionCommand().equals("Run")) {
 			_back.setEnabled(false);
 			_step.setEnabled(false);
-			_faster.setEnabled(true);
-			_slower.setEnabled(true);
+			if(sim.getAnimationDelay() == RobotGrid.MIN_ANIMATION_DELAY)
+				_faster.setEnabled(false);
+			else
+				_faster.setEnabled(true);
+			if(sim.getAnimationDelay() == RobotGrid.MAX_ANIMATION_DELAY)
+				_slower.setEnabled(false);
+			else
+				_slower.setEnabled(true);
 			_run.setText("Stop");
 			sim.startAnimation();
 		}
 		if(e.getSource() == _faster) {
+			if(sim.getAnimationDelay() == RobotGrid.MIN_ANIMATION_DELAY)
+				_faster.setEnabled(false);
 			sim.increaseAnimationSpeed();
+			_slower.setEnabled(true);
 		}
 		if(e.getSource() == _slower) {
+			if(sim.getAnimationDelay() == RobotGrid.MAX_ANIMATION_DELAY)
+				_slower.setEnabled(false);
 			sim.decreaseAnimationSpeed();
+			_faster.setEnabled(true);
 		}
 		if(e.getActionCommand().equals("Stop")) {
 			sim.stopAnimation();

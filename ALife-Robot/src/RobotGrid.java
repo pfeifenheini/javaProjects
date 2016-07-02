@@ -24,6 +24,10 @@ public class RobotGrid extends JPanel implements ActionListener {
 	public static final int DEFAULT_GRID_SIZE = 50;
 	/** default animation delay */
 	public static final int DEFAULT_ANIMATION_DELAY = 500;
+	/** minimum animation delay */
+	public static final int MIN_ANIMATION_DELAY = 17;
+	/** maximum animation delay */
+	public static final int MAX_ANIMATION_DELAY = 1000;
 	
 	/** the grid */
 	private int[][] _grid;
@@ -103,12 +107,16 @@ public class RobotGrid extends JPanel implements ActionListener {
 	public boolean isAnimating() {
 		return _timer.isRunning();
 	}
+	
+	public int getAnimationDelay() {
+		return _timer.getDelay();
+	}
 
 	/**
 	 * increases the animation speed.
 	 */
 	public void increaseAnimationSpeed() {
-		_timer.setDelay(Math.max(5, (int)(_timer.getDelay()/1.5)));
+		_timer.setDelay(Math.max(MIN_ANIMATION_DELAY, (int)(_timer.getDelay()/2)));
 		_timer.restart();
 	}
 
@@ -116,7 +124,7 @@ public class RobotGrid extends JPanel implements ActionListener {
 	 * Decreases the animation speed.
 	 */
 	public void decreaseAnimationSpeed() {
-		_timer.setDelay(Math.min(2000, (int)(_timer.getDelay()*1.5)));
+		_timer.setDelay(Math.min(MAX_ANIMATION_DELAY, (int)(_timer.getDelay()*2)));
 	}
 
 	/**
