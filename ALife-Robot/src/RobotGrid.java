@@ -53,7 +53,7 @@ public class RobotGrid extends JPanel implements ActionListener {
 	public RobotGrid() {
 		_grid = new int[_gridSize][_gridSize];
 		_robot = new Robot(_grid,_gridSize);
-		_timer = new Timer(0,this);
+		_timer = new Timer(DEFAULT_ANIMATION_DELAY,this);
 		_timer.setDelay(DEFAULT_ANIMATION_DELAY);
 		readFile();
 		setPreferredSize(new Dimension(_gridSize*_pixelSize,_gridSize*_pixelSize));
@@ -117,6 +117,7 @@ public class RobotGrid extends JPanel implements ActionListener {
 	 */
 	public void increaseAnimationSpeed() {
 		_timer.setDelay(Math.max(MIN_ANIMATION_DELAY, (int)(_timer.getDelay()/2)));
+		_timer.setInitialDelay(_timer.getDelay());
 		_timer.restart();
 	}
 
@@ -125,6 +126,8 @@ public class RobotGrid extends JPanel implements ActionListener {
 	 */
 	public void decreaseAnimationSpeed() {
 		_timer.setDelay(Math.min(MAX_ANIMATION_DELAY, (int)(_timer.getDelay()*2)));
+		_timer.setInitialDelay(_timer.getDelay());
+		_timer.restart();
 	}
 
 	/**
@@ -242,13 +245,14 @@ public class RobotGrid extends JPanel implements ActionListener {
 		if(_robot.pathBlocked(0))
 			g.setColor(Color.red);
 		else
-			g.setColor(Color.green);
+			g.setColor(Color.black);
 		
 		int centerX = _robot.x()*_pixelSize;
 		int centerY = (_gridSize-_robot.y()-1)*_pixelSize;
 		int angle = -_robot.direction().degree()-245;
 		
-		g.fillArc(centerX-_pixelSize, centerY-_pixelSize, 3*_pixelSize, 3*_pixelSize, angle, -50);
+		g.fillArc(centerX-2*_pixelSize/3, centerY-2*_pixelSize/3, 7*_pixelSize/3, 7*_pixelSize/3, angle-5, -10);
+		g.fillArc(centerX-2*_pixelSize/3, centerY-2*_pixelSize/3, 7*_pixelSize/3, 7*_pixelSize/3, angle-35, -10);
 		g.setColor(Color.black);
 	}
 	

@@ -180,7 +180,8 @@ public class ALifeRobot extends JFrame implements ActionListener {
 				_highlight.setEnabled(false);
 			}
 			else {
-				_back.setEnabled(true);
+				if(!sim.isAnimating())
+					_back.setEnabled(true);
 				_highlight.setEnabled(true);
 			}
 		}
