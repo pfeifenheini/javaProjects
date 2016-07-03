@@ -11,7 +11,7 @@ import java.util.Scanner;
 import javax.swing.JPanel;
 import javax.swing.Timer;
 
-public class RobotGrid extends JPanel implements ActionListener { 
+public class RobotGrid extends JPanel { 
 
 	/**
 	 * 
@@ -53,7 +53,14 @@ public class RobotGrid extends JPanel implements ActionListener {
 	public RobotGrid() {
 		_grid = new int[_gridSize][_gridSize];
 		_robot = new Robot(_grid,_gridSize);
-		_timer = new Timer(DEFAULT_ANIMATION_DELAY,this);
+		_timer = new Timer(DEFAULT_ANIMATION_DELAY,
+				new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				_robot.step();
+				repaint();
+			}
+		});
 		_timer.setDelay(DEFAULT_ANIMATION_DELAY);
 		readFile();
 		setPreferredSize(new Dimension(_gridSize*_pixelSize,_gridSize*_pixelSize));
@@ -104,6 +111,13 @@ public class RobotGrid extends JPanel implements ActionListener {
 		_timer.start();
 	}
 	
+	/**
+	 * Stops the animation
+	 */
+	public void stopAnimation() {
+		_timer.stop();
+	}
+
 	public boolean isAnimating() {
 		return _timer.isRunning();
 	}
@@ -129,15 +143,6 @@ public class RobotGrid extends JPanel implements ActionListener {
 		_timer.setInitialDelay(_timer.getDelay());
 		_timer.restart();
 	}
-
-	/**
-	 * Animation step that is called by the timer.
-	 */
-	@Override
-	public void actionPerformed(ActionEvent arg0) {
-		_robot.step();
-		repaint();
-	}
 	
 	/**
 	 * Performs one step of the robot.
@@ -146,13 +151,6 @@ public class RobotGrid extends JPanel implements ActionListener {
 		_robot.step();
 	}
 
-	/**
-	 * Stops the animation
-	 */
-	public void stopAnimation() {
-		_timer.stop();
-	}
-	
 	/**
 	 * Sets the pixel size.
 	 * 
@@ -243,7 +241,7 @@ public class RobotGrid extends JPanel implements ActionListener {
 	 */
 	private void paintDirection(Graphics g) {
 		if(_robot.pathBlocked(0))
-			g.setColor(Color.red);
+			g.setColor(Color.orange);
 		else
 			g.setColor(Color.black);
 		
