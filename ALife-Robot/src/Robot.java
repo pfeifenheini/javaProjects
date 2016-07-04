@@ -105,6 +105,8 @@ public class Robot {
 	
 	public void setStrategy(Strategy strategy) {
 		_strategy = strategy;
+		if(strategy == Strategy.DFS)
+			turn(_direction.ordinal()%2);
 		_history.clear();
 	}
 
@@ -253,24 +255,28 @@ public class Robot {
 	}
 
 	public void DFSStep() {
-		_grid[_x][_y] = -1;
+		if(_history.size() == 1)
+			_grid[_x][_y] = -1;
+		else
+			_grid[_x][_y] = -10-_direction.ordinal();
 		int rand = (int)(Math.random()*5);
 		if(rand == 1)
-			turn(-1);
+			turn(-2);
 		else if(rand == 2)
-			turn(1);
+			turn(2);
 		else
 			turn(0);
 		
-		for(@SuppressWarnings("unused") Direction d : Direction.values()) {
+		for(int i=0;i<4;i++) {
 			if(!pathBlocked(0) && _grid[facingX()][facingY()] >= 0) {
 				_x = facingX();
 				_y = facingY();
 				return;
 			}
-			turn(1);
+			turn(2);
 		}
-		_grid[_x][_y] = -2;
+		if(_grid[_x][_y] != -1)
+			_grid[_x][_y] -= 10;
 		_direction = _history.peek().direction;
 		_history.pop();
 		backtrack();
@@ -324,22 +330,23 @@ public class Robot {
 	 * @return x-coodrinate of the cell in the given direction
 	 */
 	public int facingX(Direction direction) {
-		switch (direction) {
-		case NE:
-			return _x+1;
-		case E:
-			return _x+1;
-		case SE:
-			return _x+1;
-		case SW:
-			return _x-1;
-		case W:
-			return _x-1;
-		case NW:
-			return _x-1;
-		default:
-			return _x;
-		}
+		return facingX(_x, direction);
+//		switch (direction) {
+//		case NE:
+//			return _x+1;
+//		case E:
+//			return _x+1;
+//		case SE:
+//			return _x+1;
+//		case SW:
+//			return _x-1;
+//		case W:
+//			return _x-1;
+//		case NW:
+//			return _x-1;
+//		default:
+//			return _x;
+//		}
 	}
 	
 	/**
@@ -347,21 +354,60 @@ public class Robot {
 	 * @return y-coodrinate of the cell in the given direction
 	 */
 	public int facingY(Direction direction) {
+		return facingY(_y,direction);
+//		switch (direction) {
+//		case N:
+//			return _y+1;
+//		case NE:
+//			return _y+1;
+//		case SE:
+//			return _y-1;
+//		case S:
+//			return _y-1;
+//		case SW:
+//			return _y-1;
+//		case NW:
+//			return _y+1;
+//		default:
+//			return _y;
+//		}
+	}
+	
+	public int facingX(int x, Direction direction) {
+		switch (direction) {
+		case NE:
+			return x+1;
+		case E:
+			return x+1;
+		case SE:
+			return x+1;
+		case SW:
+			return x-1;
+		case W:
+			return x-1;
+		case NW:
+			return x-1;
+		default:
+			return x;
+		}
+	}
+	
+	public int facingY(int y, Direction direction) {
 		switch (direction) {
 		case N:
-			return _y+1;
+			return y+1;
 		case NE:
-			return _y+1;
+			return y+1;
 		case SE:
-			return _y-1;
+			return y-1;
 		case S:
-			return _y-1;
+			return y-1;
 		case SW:
-			return _y-1;
+			return y-1;
 		case NW:
-			return _y+1;
+			return y+1;
 		default:
-			return _y;
+			return y;
 		}
 	}
 }

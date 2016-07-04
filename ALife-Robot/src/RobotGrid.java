@@ -202,13 +202,25 @@ public class RobotGrid extends JPanel {
 						g.fillOval(x*_pixelSize+1, (_gridSize-y-1)*_pixelSize+1, _pixelSize-2, _pixelSize-2);
 					}
 					
-					if(_grid[x][y] == -1) {
-						g.setColor(Color.green);
-						g.fillOval(x*_pixelSize+1, (_gridSize-y-1)*_pixelSize+1, _pixelSize-2, _pixelSize-2);
-					}
-					else if(_grid[x][y] == -2) {
-						g.setColor(Color.blue);
-						g.fillOval(x*_pixelSize+1, (_gridSize-y-1)*_pixelSize+1, _pixelSize-2, _pixelSize-2);
+					if(_grid[x][y] < 0) {
+						int decode = _grid[x][y];
+						if(decode == -1) {
+							g.setColor(Color.green);
+							g.fillOval(x*_pixelSize+1, (_gridSize-y-1)*_pixelSize+1, _pixelSize-2, _pixelSize-2);
+							continue;
+						}
+						else if(decode > -20) {
+							g.setColor(Color.green);
+						}
+						else {
+							g.setColor(Color.blue);
+							decode += 10;
+						}
+						decode = (-decode-10+4)%8;
+						g.drawLine(x*_pixelSize+(_pixelSize/2),
+								(_gridSize-1-y)*_pixelSize+(_pixelSize/2),
+								_robot.facingX(x,Robot.Direction.values()[decode])*_pixelSize+(_pixelSize/2),
+								(_gridSize-1-_robot.facingY(y,Robot.Direction.values()[decode]))*_pixelSize+(_pixelSize/2));
 					}
 				}
 			}
@@ -367,6 +379,8 @@ public class RobotGrid extends JPanel {
 	 */
 	public void turnRobot(int offset) {
 		_robot.turn(offset);
+		if(_robot.strategy() == Robot.Strategy.DFS)
+			_robot.turn(offset);
 	}
 
 	/**
