@@ -1,6 +1,8 @@
+import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.BufferedReader;
@@ -182,6 +184,15 @@ public class RobotGrid extends JPanel {
 	public void paintComponent(Graphics g) {
 		super.paintComponent(g);
 		
+		if(_showRaster) {
+			g.setColor(Color.lightGray);
+			for(int x=0;x<_gridSize;x++) {
+				for(int y=0;y<_gridSize;y++) {
+					g.drawRect(x*_pixelSize, (_gridSize-y-1)*_pixelSize, _pixelSize, _pixelSize);
+				}
+			}
+		}
+		
 		// Draw Grid
 		for(int x=0;x<_gridSize;x++) {
 			for(int y=0;y<_gridSize;y++) {
@@ -190,10 +201,6 @@ public class RobotGrid extends JPanel {
 					g.fillRect(x*_pixelSize, (_gridSize-y-1)*_pixelSize, _pixelSize, _pixelSize);
 				}
 				else {
-					if(_showRaster) {
-						g.setColor(Color.lightGray);
-						g.drawRect(x*_pixelSize, (_gridSize-y-1)*_pixelSize, _pixelSize, _pixelSize);
-					}
 					
 					if(_grid[x][y] > 1) {
 						float[] c = new float[3];
@@ -217,10 +224,13 @@ public class RobotGrid extends JPanel {
 							decode += 10;
 						}
 						decode = (-decode-10+4)%8;
-						g.drawLine(x*_pixelSize+(_pixelSize/2),
+						Graphics2D g2 = (Graphics2D) g;
+						g2.setStroke(new BasicStroke(_pixelSize/3));
+						g2.drawLine(x*_pixelSize+(_pixelSize/2),
 								(_gridSize-1-y)*_pixelSize+(_pixelSize/2),
 								_robot.facingX(x,Robot.Direction.values()[decode])*_pixelSize+(_pixelSize/2),
 								(_gridSize-1-_robot.facingY(y,Robot.Direction.values()[decode]))*_pixelSize+(_pixelSize/2));
+						g2.setStroke(new BasicStroke(1));
 					}
 				}
 			}
