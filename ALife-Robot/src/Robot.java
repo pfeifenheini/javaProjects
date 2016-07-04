@@ -259,13 +259,15 @@ public class Robot {
 			_grid[_x][_y] = -1;
 		else
 			_grid[_x][_y] = -10-_direction.ordinal();
-		int rand = (int)(Math.random()*5);
-		if(rand == 1)
+		double rand = Math.random()*100;
+		if(rand < 5)
 			turn(-2);
-		else if(rand == 2)
+		else if(rand < 10)
 			turn(2);
 		else
 			turn(0);
+		
+		rand = Math.random();
 		
 		for(int i=0;i<4;i++) {
 			if(!pathBlocked(0) && _grid[facingX()][facingY()] >= 0) {
@@ -273,7 +275,10 @@ public class Robot {
 				_y = facingY();
 				return;
 			}
-			turn(2);
+			if(rand < 0.5)
+				turn(2);
+			else
+				turn(-2);
 		}
 		if(_grid[_x][_y] != -1)
 			_grid[_x][_y] -= 10;
