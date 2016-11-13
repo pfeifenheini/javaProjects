@@ -1,7 +1,11 @@
 import java.io.BufferedReader;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Locale;
 import java.util.Random;
@@ -26,7 +30,6 @@ public class MPerzeptron {
 	
 	/** seed for random number generator */
 	private long seed = 0;
-	public void setSeed(long newSeed){seed = newSeed;}
 	/** dimension of the input */
 	private int inputDimension;
 	/** dimension of the output */
@@ -50,16 +53,22 @@ public class MPerzeptron {
 	private ArrayList<double[]> neuronOutputs;
 	/** delta value of each neuron (including input layer) */
 	private ArrayList<double[]> deltaValues;
-	/** amount each weight will be changed */
-	private ArrayList<double[][]> deltaWeights;
+	
+	/** log file */
+	private PrintWriter log = null;
+	/** written lines in log */
+	private int logLine = 0;
 
 	
 	/**
 	 * 
-	 * @param neuronsPerLayer array containing the number of neurons per layer, starting with input layer at index 0
-	 * @param transfer array containing the transfer function per layer, starting with first layer after input layer at index 0
+	 * @param neuronsPerLayer number of neurons per layer, starting with input layer
+	 * @param transfer transfer function per layer, starting with first layer after input layer
+	 * @param learningRate learning rate per layer, starting with first layer after input layer
+	 * @param seed seed used for random number generator
 	 */
-	public MPerzeptron(int[] neuronsPerLayer, TransferFunction[] transfer, double[] learningRate) {
+	public MPerzeptron(int[] neuronsPerLayer, TransferFunction[] transfer, double[] learningRate, long seed) {
+		this.seed = seed;
 		this.neuronsPerLayer = neuronsPerLayer.clone();
 		layers = neuronsPerLayer.length;
 		inputDimension = neuronsPerLayer[0];
@@ -148,7 +157,7 @@ public class MPerzeptron {
 			else
 				return 1/(1+Math.exp(-x));
 		}
-		else {
+		else { //TransferFunction.ID
 			if(derivative)
 				return 1.0;
 			else
@@ -179,7 +188,8 @@ public class MPerzeptron {
 			}
 		} catch (IOException e) {
 			System.out.println(e.getMessage());
-			System.exit(1);
+//			System.exit(1);
+			return null;
 		} finally {
 			try {
 				if(br != null) br.close();
@@ -208,7 +218,9 @@ public class MPerzeptron {
 				progress+=10;
 				System.out.println(progress+ "%");
 			}
-		}	
+		}
+		log.flush();
+		log.close();
 	}
 	
 	/**
@@ -217,7 +229,9 @@ public class MPerzeptron {
 	 * @param iterations how often each pattern is trained
 	 */
 	public void train(String fileName, int iterations) {
-		train(readPatternsFromFile(fileName),iterations);
+		Vector<Pattern> p = readPatternsFromFile(fileName);
+		if(p != null)
+			train(readPatternsFromFile(fileName),iterations);
 	}
 	
 	/**
@@ -232,16 +246,17 @@ public class MPerzeptron {
 		for(Pattern p:testPatterns) {
 			output = calculate(p.input);
 			if(show) {
-				System.out.print("In: ");
-				printArray(p.input);
-				System.out.print("out: ");
-				printArray(output);
-				System.out.println();
+				System.out.print("In: " + Arrays.toString(p.input));
+				System.out.print(" out: "  + Arrays.toString(output));
+				System.out.println(" (teacher: "  + Arrays.toString(p.output) + ")");
+				
 			}
 			err = error(p.output, output);
+//			log(err);
 			total += err;
 //			System.out.println("Test pattern " + counter++ + " has error " + err);
 		}
+		log(total);
 //		System.out.println("Total error: " + total);
 		return total;
 	}
@@ -252,7 +267,10 @@ public class MPerzeptron {
 	 * @return accumulated error over all tested patterns
 	 */
 	public double test(String fileName) {
-		return test(readPatternsFromFile(fileName),true);
+		Vector<Pattern> p = readPatternsFromFile(fileName);
+		if(p != null)
+			return test(readPatternsFromFile(fileName),true);
+		return -1;
 	}
 	
 	/**
@@ -320,6 +338,24 @@ public class MPerzeptron {
 	}
 	
 	/**
+	 * logs the error in a file
+	 * @param err value to log
+	 */
+	private void log(double err) {
+		if(log == null) {
+			try {
+				log = new PrintWriter("learning.curve", "UTF-8");
+			} catch (FileNotFoundException e) {
+				e.printStackTrace();
+			} catch (UnsupportedEncodingException e) {
+				e.printStackTrace();
+			}
+		}
+		
+		log.println(logLine++ + " " + err);
+	}
+	
+	/**
 	 * @return string that represents the state of the network
 	 */
 	public String toString() {
@@ -345,53 +381,63 @@ public class MPerzeptron {
 		return s;
 	}
 	
-	public static void printArray(double[] a) {
-		for(double d:a)
-			System.out.print(Math.round(d) +" ");
-	}
-	
 	public static void main(String[] args) {
-//		String file = "training1.dat";
+//		String trainingFile = "training1.dat";
 //		int[] neurons = {4,2};
 //		TransferFunction[] transfer = {TransferFunction.TANH};
-//		double[] learningRates = {0.5};
+//		double[] learningRates = {0.05};
 		
-//		String file = "training1.dat";
-//		int[] neurons = {4,5,2};
-//		TransferFunction[] transfer = {TransferFunction.TANH,TransferFunction.ID};
-//		double[] learningRates = {0.001,0.0005};
+//		String trainingFile = "training1.dat";
+//		int[] neurons = {4,8,2};
+//		TransferFunction[] transfer = {TransferFunction.TANH,TransferFunction.TANH};
+//		double[] learningRates = {0.05,0.05};
 		
-//		String file = "training2.dat";
+//		String trainingFile = "training2.dat";
 //		int[] neurons = {2,1};
 //		TransferFunction[] transfer = {TransferFunction.ID};
 //		double[] learningRates = {0.05};
 		
-//		String file = "training2.dat";
-//		int[] neurons = {2,5,1};
-//		TransferFunction[] transfer = {TransferFunction.TANH,TransferFunction.ID};
-//		double[] learningRates = {0.005,0.001};
+//		String trainingFile = "training2.dat";
+//		int[] neurons = {2,5,5,1};
+//		TransferFunction[] transfer = {TransferFunction.TANH,TransferFunction.TANH,TransferFunction.ID};
+//		double[] learningRates = {0.005,0.001,0.0001};
 		
-//		String file = "XOR.dat";
+//		String trainingFile = "XOR.dat";
 //		int[] neurons = {2,2,1};
 //		TransferFunction[] transfer = {TransferFunction.TANH,TransferFunction.FERMI};
 //		double[] learningRates = {0.8,0.2};
 		
-		String file = "838codec.dat";
-		int[] neurons = {8,2,8};
-		TransferFunction[] transfer = {TransferFunction.FERMI,TransferFunction.FERMI};
+//		String trainingFile = "838codec.dat";
+//		int[] neurons = {8,2,8};
+//		TransferFunction[] transfer = {TransferFunction.FERMI,TransferFunction.FERMI};
+//		double[] learningRates = {0.8,0.2};
+		
+		// file with training patterns
+		String trainingFile = "training.dat";
+		
+		// file with test patterns
+		String testFile = "test.dat";
+		
+		// neurons per layer (starting with input layer)
+		int[] neurons = {4,5,2};
+		
+		// transfer functions per layer (starting with second layer)
+		TransferFunction[] transfer = {TransferFunction.TANH,TransferFunction.TANH};
+		
+		// learning rates per layer (starting with second layer) 
 		double[] learningRates = {0.8,0.2};
-
 		
-		MPerzeptron p = new MPerzeptron(neurons, transfer, learningRates);
-		System.out.println(p.toString());
+		// seed for random number generator
+		long seed = new Random().nextLong();
+//		seed = 0;
+		System.out.println("seed: " + seed);
 		
-		System.out.println("Total error: " + p.test(file));
-		p.train(file,500000);
-//		System.out.println("Total error: " + p.test(file));
-//		for(int i=0;i<learningRates.length;i++) learningRates[i] = learningRates[i]/10;
-//		p.setLearningRate(learningRates);
-//		p.train(file,300000);
-		System.out.println(p.toString());
-		System.out.println("Total error: " + p.test(file));
+		MPerzeptron p = new MPerzeptron(neurons, transfer, learningRates, seed);
+		
+		System.out.println("current error (training data): " + p.test(trainingFile));
+		System.out.println("current error (test data): " + p.test(testFile));
+		p.train(trainingFile,100000);
+		System.out.println("current error: (training data) " + p.test(trainingFile));
+		System.out.println("current error (test data): " + p.test(testFile));
 	}
 }
