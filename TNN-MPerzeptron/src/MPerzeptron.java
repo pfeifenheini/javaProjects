@@ -208,12 +208,13 @@ public class MPerzeptron {
 	 */
 	public void train(Vector<Pattern> trainingPatterns, int iterations) {
 		int progress=0;
+		Random r = new Random(seed);
 		for(int i=0;i<iterations;i++) {
 			for(Pattern p:trainingPatterns) {
 				teach(p.input,p.output);
 			}
 			test(trainingPatterns,false);
-			Collections.shuffle(trainingPatterns,new Random(seed));
+			Collections.shuffle(trainingPatterns,r);
 			if((double)i/iterations>((double)progress+10)/100) {
 				progress+=10;
 				System.out.println(progress+ "%");
@@ -387,10 +388,10 @@ public class MPerzeptron {
 //		TransferFunction[] transfer = {TransferFunction.TANH};
 //		double[] learningRates = {0.05};
 		
-//		String trainingFile = "training1.dat";
-//		int[] neurons = {4,8,2};
-//		TransferFunction[] transfer = {TransferFunction.TANH,TransferFunction.TANH};
-//		double[] learningRates = {0.05,0.05};
+		String trainingFile = "training1.dat";
+		int[] neurons = {4,8,2};
+		TransferFunction[] transfer = {TransferFunction.TANH,TransferFunction.TANH};
+		double[] learningRates = {0.05,0.05};
 		
 //		String trainingFile = "training2.dat";
 //		int[] neurons = {2,1};
@@ -413,19 +414,19 @@ public class MPerzeptron {
 //		double[] learningRates = {0.8,0.2};
 		
 		// file with training patterns
-		String trainingFile = "training.dat";
+//		String trainingFile = "training.dat";
 		
 		// file with test patterns
 		String testFile = "test.dat";
 		
 		// neurons per layer (starting with input layer)
-		int[] neurons = {4,5,2};
+//		int[] neurons = {4,5,2};
 		
 		// transfer functions per layer (starting with second layer)
-		TransferFunction[] transfer = {TransferFunction.TANH,TransferFunction.TANH};
+//		TransferFunction[] transfer = {TransferFunction.TANH,TransferFunction.TANH};
 		
 		// learning rates per layer (starting with second layer) 
-		double[] learningRates = {0.8,0.2};
+//		double[] learningRates = {0.8,0.2};
 		
 		// seed for random number generator
 		long seed = new Random().nextLong();
