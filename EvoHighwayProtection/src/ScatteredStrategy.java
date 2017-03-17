@@ -5,7 +5,7 @@ import java.util.LinkedList;
 import java.util.Queue;
 import java.util.Random;
 
-public class Strategy implements Comparable<Strategy> {
+public class ScatteredStrategy extends Strategy {
 	public static final int FREE = 0;
 	public static final int BURNING = 1;
 	public static final int SAVE = 2;
@@ -313,88 +313,5 @@ public class Strategy implements Comparable<Strategy> {
 				grid[i][j] = FREE;
 			}
 		}
-	}
-	
-	public void printGrid() {
-		for(int i=0;i<grid.length;i++) {
-			for(int j=0;j<grid[i].length;j++) {
-				if(grid[i][j] == FREE)
-					System.out.print(" ");
-				if(grid[i][j] == BURNING)
-					System.out.print("X");
-				if(grid[i][j] == SAVE)
-					System.out.print("-");
-				if(grid[i][j] == SAVEOFFSET)
-					System.out.print("=");
-			}
-			System.out.println();
-		}
-		System.out.println("Time: " + timeToReachHighway);
-		System.out.println("NonBurning: " + nonBurningHighwayCells);
-		System.out.println("Fitness:" + fitness());
-	}
-
-	public void save(String prefix) {
-		try {
-			PrintWriter writer = new PrintWriter(prefix+".data","UTF-8");
-			
-			for(int i=0;i<xBoundary;i++) {
-				for(int j=0;j<yBoundary;j++)
-						writer.print(grid[i][j] + " ");
-				writer.println();
-			}
-			
-			writer.close();
-			
-			System.out.println(">>>>>>>>>>>>> SAVE SUCESSFUL <<<<<<<<<<<<<<<");
-			
-		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (UnsupportedEncodingException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		
-//		try {
-//			PrintWriter writerBurning = new PrintWriter(prefix+"Burning.data","UTF-8");
-//			PrintWriter writerSave = new PrintWriter(prefix+"Save.data","UTF-8");
-//			
-//			for(int i=0;i<xBoundary;i++) {
-//				for(int j=0;j<yBoundary;j++) {
-//					if(grid[i][j] == BURNING)
-//						writerBurning.println(i + " " + j);
-//					if(grid[i][j] == SAVE)
-//						writerSave.println(i + " " + j);
-//				}
-//			}
-//			
-//			writerBurning.close();
-//			writerSave.close();
-//			
-//			System.out.println(">>>>>>>>>>>>> SAVE SUCESSFUL <<<<<<<<<<<<<<<");
-//			
-//		} catch (FileNotFoundException e) {
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//		} catch (UnsupportedEncodingException e) {
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//		}
-		
-		
-	}
-
-	@Override
-	public int compareTo(Strategy arg0) {
-		
-		if(timeToReachHighway != arg0.timeToReachHighway)
-			return arg0.timeToReachHighway - timeToReachHighway;
-		
-		for(int i=xBoundary-1;i>=0;i--) {
-			if(arg0.nonBurningPerLevel[i] != nonBurningPerLevel[i])
-				return arg0.nonBurningPerLevel[i] - nonBurningPerLevel[i];
-		}
-		return 0;
 	}
 }
