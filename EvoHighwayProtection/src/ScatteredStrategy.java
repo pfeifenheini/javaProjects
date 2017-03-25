@@ -1,44 +1,13 @@
-import java.io.FileNotFoundException;
-import java.io.PrintWriter;
-import java.io.UnsupportedEncodingException;
 import java.util.LinkedList;
 import java.util.Queue;
 import java.util.Random;
 
 public class ScatteredStrategy extends Strategy {
-	public static final int FREE = 0;
-	public static final int BURNING = 1;
-	public static final int SAVE = 2;
-	public static final int SAVEOFFSET = 3;
-	
-	
-//	public static long seed = new Random().nextLong();
-	public static long seed = 42;
-	public static Random rand = null;
-	
-	public static int xBoundary = 33;
-	public static int yBoundary = 103; // = 10*xBoundary+1
-	
-	public final static double initialAccount = 1.2;
-	public final static double budged = 1.2;
-	public final static double mutationRate = 0.5;
-	public final static double mutationVersionWiggle = 0.6;
-	public final static double wiggleSize = 1.0;
-	public final static double mutationVersionSwap = 0.3;
-	
-	private int[][] grid;
 	
 	private Coordinate[] sequence;
 	
-	private int timeToReachHighway = 0;
-	private int nonBurningHighwayCells = 0;
-	private int[] nonBurningPerLevel;
-	
-	boolean changed = true;
-	
-	public Strategy() {
-		if(rand == null)
-			rand = new Random(seed);
+	public ScatteredStrategy() {
+		super();
 		
 		nonBurningPerLevel = new int[xBoundary];
 		grid = new int[Strategy.xBoundary][Strategy.yBoundary];
@@ -53,17 +22,11 @@ public class ScatteredStrategy extends Strategy {
 			else
 				sequence[i] = new Coordinate(xBoundary-2,Math.max(yBoundary/2-i/2,0));
 		}
-		
-//		for(int i=0;i<sequence.length;i++)
-//		sequence[i] = new Coordinate(xBoundary-2,yBoundary-1);
 	}
 	
-	public Strategy(Strategy toClone) {
-		if(rand == null)
-			rand = new Random(seed);
+	public ScatteredStrategy(ScatteredStrategy toClone) {
+		super();
 		
-		nonBurningPerLevel = new int[xBoundary];
-		grid = new int[Strategy.xBoundary][Strategy.yBoundary];
 		sequence = new Coordinate[(int)((yBoundary)*Math.max(budged,1)+1)];
 		for(int i=0;i<sequence.length;i++)
 			sequence[i] = new Coordinate(toClone.sequence[i].x,toClone.sequence[i].y);
@@ -71,45 +34,17 @@ public class ScatteredStrategy extends Strategy {
 			changed = false;
 	}
 	
-	public Strategy(Strategy parent1, Strategy parent2) {
-		if(rand == null)
-			rand = new Random(seed);
+	public ScatteredStrategy(ScatteredStrategy parent1, ScatteredStrategy parent2) {
+		super();
 		
-		nonBurningPerLevel = new int[xBoundary];
-		grid = new int[Strategy.xBoundary][Strategy.yBoundary];
 		sequence = new Coordinate[(int)((yBoundary)*Math.max(budged,1)+1)];
-		int crossPoint = rand.nextInt(sequence.length);
+//		int crossPoint = rand.nextInt(sequence.length);
 		for(int i=0;i<sequence.length;i++) {
 			if(rand.nextBoolean())
 				sequence[i] = new Coordinate(parent1.sequence[i].x,parent1.sequence[i].y);
 			else
 				sequence[i] = new Coordinate(parent2.sequence[i].x,parent2.sequence[i].y);
 		}
-		
-		changed = true;
-	}
-	
-	//TODO correct fitness
-	public double fitness() {
-		if(changed) {
-			System.out.println("need to create new grid");
-			simulate(false,false);
-		}
-		
-		double value = 0;
-		int burningInLine;
-		for(int i=0;i<xBoundary;i++) {
-			
-			burningInLine = 0;
-			for(int j=0;j<yBoundary;j++) {
-				if(grid[i][j] == BURNING)
-					burningInLine++;
-			}
-			
-			value += burningInLine*Math.pow(yBoundary, (double)i);
-		}
-		
-		return Math.log(value);
 	}
 	
 	/**
@@ -178,60 +113,6 @@ public class ScatteredStrategy extends Strategy {
 		return true;
 	}
 	
-	// returns true if a cell has been protected
-	private boolean protect(Coordinate cell) {
-		if(grid[cell.x][cell.y] != BURNING) {
-			grid[cell.x][cell.y] = SAVE;
-			return true;
-		}
-//		else {
-//			int offset = 1;
-//			while(cell.x+offset < xBoundary && grid[cell.x+offset][cell.y] != FREE) {
-//				offset++;
-//			}
-//			if(cell.x+offset < xBoundary) {
-//				grid[cell.x+offset][cell.y] = SAVEOFFSET;
-//				return true;
-//			}
-//		}
-		return false;
-	}
-	
-	// return true if the highway is reached
-	private boolean spreadFire(Queue<Coordinate> burningBoundary) {
-		int steps = burningBoundary.size();
-		Coordinate cell;
-		for(int i=0;i<steps;i++) {
-			cell = burningBoundary.remove();
-			if(grid[Math.min(cell.x+1,xBoundary-1)][cell.y] == FREE) {
-				grid[cell.x+1][cell.y] = BURNING;
-				burningBoundary.add(new Coordinate(cell.x+1, cell.y));
-			}
-			if(grid[Math.max(cell.x-1,0)][cell.y] == FREE && cell.x != xBoundary-1) {
-				grid[cell.x-1][cell.y] = BURNING;
-				burningBoundary.add(new Coordinate(cell.x-1, cell.y));
-			}
-			if(grid[cell.x][Math.min(cell.y+1,yBoundary-1)] == FREE) {
-				grid[cell.x][cell.y+1] = BURNING;
-				burningBoundary.add(new Coordinate(cell.x, cell.y+1));
-			}
-			if(grid[cell.x][Math.max(cell.y-1,0)] == FREE) {
-				grid[cell.x][cell.y-1] = BURNING;
-				burningBoundary.add(new Coordinate(cell.x, cell.y-1));
-			}
-		}
-		
-		boolean highwayReached = false;
-		for(int i=0;i<yBoundary;i++) {
-			if(grid[xBoundary-1][i] == BURNING) {
-				highwayReached = true;
-				break;
-			}
-		}
-			
-		return highwayReached;
-	}
-	
 	public int wiggleOffset() {
 		double gaus = rand.nextGaussian();
 		if(gaus > 0)
@@ -280,38 +161,5 @@ public class ScatteredStrategy extends Strategy {
 			}
 			changed = true;
 		} 
-	}
-	
-//	public void mutate() {
-//		if(rand.nextDouble() < mutationVersionWiggle) {
-//			int xChange, yChange;
-//			for(int i=0;i<sequence.length;i++) {
-//				if(rand.nextDouble() <= mutationRate/sequence.length) {
-//					changed = true;
-//					xChange = rand.nextInt(3)-1;
-//					yChange = rand.nextInt(3)-1;
-//					if(sequence[i].x+xChange>=0 && sequence[i].x+xChange<xBoundary)
-//						sequence[i].x += xChange;
-//					if(sequence[i].y+yChange>=0 && sequence[i].y+yChange<yBoundary)
-//						sequence[i].y += yChange;
-//				}
-//			}
-//		}
-//		else {
-//			for(int i=0;i<sequence.length;i++) {
-//				if(rand.nextDouble() <= mutationRate/sequence.length) {
-//					changed = true;
-//					sequence[i] = new Coordinate(rand.nextInt(xBoundary),rand.nextInt(yBoundary));
-//				}
-//			}
-//		}
-//	}
-	
-	private void clearGrid() {
-		for(int i=0;i<grid.length;i++) {
-			for(int j=0;j<grid[i].length;j++) {
-				grid[i][j] = FREE;
-			}
-		}
 	}
 }

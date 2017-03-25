@@ -13,6 +13,8 @@ public class EvoHighwayProtection implements Runnable {
 	
 	private static String lock = new String();
 	
+	public static boolean print = false;
+	
 	public static boolean printSteps = false;
 	
 	public static boolean keepRunning = true;
@@ -57,7 +59,8 @@ public class EvoHighwayProtection implements Runnable {
 	public void run() {
 		Strategy[] population = new Strategy[populationSize];
 		for(int i=0;i<population.length;i++) {
-			population[i] = new Strategy();
+//			population[i] = new ConnectedStrategy();
+			population[i] = new ScatteredStrategy();
 			population[i].simulate(false,false);
 		}
 		
@@ -66,14 +69,19 @@ public class EvoHighwayProtection implements Runnable {
 		
 		
 		Thread t = new Thread(new Runnable() {
+			Scanner input = new Scanner(System.in);
+			String s;
 			public void run() {
-				Scanner input = new Scanner(System.in);
 				while(keepRunning) {
-					if(input.nextLine().equalsIgnoreCase("print"))
+					s = input.nextLine();
+					
+					if(s.equalsIgnoreCase("show"))
+						print = true;
+					if(s.equalsIgnoreCase("steps"))
 						printSteps = true;
-					if(input.nextLine().equalsIgnoreCase("stop"))
+					if(s.equalsIgnoreCase("stop"))
 						keepRunning = false;
-					if(input.nextLine().equalsIgnoreCase("save"))
+					if(s.equalsIgnoreCase("save"))
 						save = true;
 				}
 				input.close();
@@ -126,42 +134,51 @@ public class EvoHighwayProtection implements Runnable {
 //				e.printStackTrace();
 //			}
 			
-			if(System.currentTimeMillis()-lastTime >= 10000) {
-				progress=(int)((double)it/totalIterations*100);
-				System.out.print(progress+ "% complete. ");
-	//				System.out.println(population[0].fitness() + " " + mean + " " + population[population.length-1].fitness());
-				remainingTime = (long)((((System.currentTimeMillis()-lastTime)/1000)/(double)(it-lastIteration))*(totalIterations-it));
-				second = remainingTime%60;
-				minute = (remainingTime/60)%60;
-				hour = (remainingTime/3600)%24;
-				System.out.println(String.format("%02d:%02d:%02d remain", hour, minute, second));
-//				population[0].printGrid();
-				
-				if(printSteps) {
-					population[0].simulate(true, true);
-					printSteps = false;
-				}
-					
-				if(save) {
-					population[0].save("best");
-					save = false;
-				}
+			if(print) {
 				population[0].printGrid();
-				
-				worstFitness = 0;
-				averageFitness = 0;
-				for(int i=0;i<(int)(populationSize*parentRatio);i++) {
-					averageFitness += population[i].fitness();
-					if(population[i].fitness()>worstFitness)
-						worstFitness = population[i].fitness(); 
-				}
-				averageFitness = averageFitness/((int)(populationSize*parentRatio));
-				
-				System.out.println("average: " + averageFitness);
-				System.out.println("worst: " + worstFitness);
-				lastTime = System.currentTimeMillis();
-				lastIteration = it;
+				print = false;
 			}
+			
+			if(printSteps) {
+				population[0].simulate(true, true);
+				population[0].printGrid();
+				printSteps = false;
+			}
+				
+			if(save) {
+				population[0].save("best");
+				System.out.println("Saved!");
+				save = false;
+			}
+			
+//			if(System.currentTimeMillis()-lastTime >= 10000) {
+//				progress=(int)((double)it/totalIterations*100);
+//				System.out.print(progress+ "% complete. ");
+//	//				System.out.println(population[0].fitness() + " " + mean + " " + population[population.length-1].fitness());
+//				remainingTime = (long)((((System.currentTimeMillis()-lastTime)/1000)/(double)(it-lastIteration))*(totalIterations-it));
+//				second = remainingTime%60;
+//				minute = (remainingTime/60)%60;
+//				hour = (remainingTime/3600)%24;
+//				System.out.println(String.format("%02d:%02d:%02d remain", hour, minute, second));
+////				population[0].printGrid();
+//				
+//
+//				population[0].printGrid();
+//				
+//				worstFitness = 0;
+//				averageFitness = 0;
+//				for(int i=0;i<(int)(populationSize*parentRatio);i++) {
+//					averageFitness += population[i].fitness();
+//					if(population[i].fitness()>worstFitness)
+//						worstFitness = population[i].fitness(); 
+//				}
+//				averageFitness = averageFitness/((int)(populationSize*parentRatio));
+//				
+//				System.out.println("average: " + averageFitness);
+//				System.out.println("worst: " + worstFitness);
+//				lastTime = System.currentTimeMillis();
+//				lastIteration = it;
+//			}
 
 //			System.out.println(population[0].fitness() + " " + mean + " " + population[population.length-1].fitness());
 			
@@ -175,7 +192,8 @@ public class EvoHighwayProtection implements Runnable {
 				do{
 					parent2 = rouletteSelect((int)(populationSize*parentRatio));
 				} while (parent1 == parent2);
-				population[j] = new Strategy(population[parent1],population[parent2]);
+//				population[j] = new ConnectedStrategy((ConnectedStrategy)population[parent1],(ConnectedStrategy)population[parent2]);
+				population[j] = new ScatteredStrategy((ScatteredStrategy)population[parent1],(ScatteredStrategy)population[parent2]);
 				
 				population[j].mutate();
 				population[j].simulate(false,false);

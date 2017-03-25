@@ -7,4 +7,8 @@ public class Coordinate {
 		this.x = x;
 		this.y = y;
 	}
+	
+	public Coordinate clone() {
+		return new Coordinate(x,y);
+	}
 }
